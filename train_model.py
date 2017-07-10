@@ -25,6 +25,7 @@ from keras.applications.imagenet_utils import decode_predictions
 from keras.optimizers import SGD
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import fbeta_score
+from tqdm import tqdm
 #==============================================
 #                   Files
 #==============================================
@@ -348,7 +349,7 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
     X_val, y_val = [], []
     # for train and validation
     for df, X in [(df_train, X_train), (df_val, X_val)]:
-        for image_id in df.image_name:
+        for image_id in tqdm(df.image_name, miniters=100):
             image_path = image_dir+str(image_id)+".jpg"
             if os.path.exists(image_path):
                 try:
