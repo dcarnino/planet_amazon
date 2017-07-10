@@ -24,7 +24,7 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from keras.applications.imagenet_utils import decode_predictions
 from keras.optimizers import SGD
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import fbs
+from sklearn.metrics import fbeta_score
 from tqdm import tqdm
 #==============================================
 #                   Files
