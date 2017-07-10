@@ -320,7 +320,7 @@ def fbs(y_true, y_pred, threshold_shift=0, beta=2):
 
     tp = K.sum(K.round(y_true * y_pred_bin)) + K.epsilon()
     fp = K.sum(K.round(K.clip(y_pred_bin - y_true, 0, 1)))
-    fn = K.sum(K.round(K.clip(y_true - y_pred, 0, 1)))
+    fn = K.sum(K.round(K.clip(y_true - y_pred_bin, 0, 1)))
 
     precision = tp / (tp + fp)
     recall = tp / (tp + fn)
