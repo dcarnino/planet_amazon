@@ -1,25 +1,29 @@
 """
-    Name:           inception_train.py
-    Created:        2/4/2017
-    Description:    Fine-tune inception v3 on specific Modastylz data.
+    Name:           train_model.py
+    Created:        10/7/2017
+    Description:    Fine-tune inception v3 for Planet Amazon.
 """
 #==============================================
 #                   Modules
 #==============================================
 import sys
 import os
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
 import numpy as np
 import pandas as pd
 import time
+import gzip
+import pickle
 from collections import Counter
 from keras.applications.inception_v3 import InceptionV3
-from keras.preprocessing.image import ImageDataGenerator
+from keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
 from keras.models import Model, model_from_json
 from keras.layers import Dense, GlobalAveragePooling2D
 from keras import backend as K
-from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from keras.applications.imagenet_utils import decode_predictions
 from keras.optimizers import SGD
+from sklearn.preprocessing import LabelEncoder
 #==============================================
 #                   Files
 #==============================================
@@ -28,7 +32,7 @@ from keras.optimizers import SGD
 #==============================================
 #                   Functions
 #==============================================
-def instantiate(n_classes, n_dense=2048, n_binary=32, inception_json="inceptionv3_mod.json", verbose=1):
+def instantiate(n_classes, n_dense=2048, inception_json="inceptionv3_mod.json", verbose=1):
     """
     Instantiate the inception v3.
     """
@@ -41,13 +45,11 @@ def instantiate(n_classes, n_dense=2048, n_binary=32, inception_json="inceptionv
     x = GlobalAveragePooling2D()(x)
     # let's add a fully-connected layer
     x = Dense(n_dense, activation='relu')(x)
-    # and a binary dense layer
-    x = Dense(n_binary, activation='sigmoid')(x)
     # and a final logistic layer
-    predictions = Dense(n_classes, activation='softmax')(x)
+    predictions = Dense(n_classes, activation='sigmoid')(x)
 
     # this is the model we will train
-    model = Model(input=base_model.input, output=predictions)
+    model = Model(inputs=base_model.input, outputs=predictions)
 
     # first: train only the top layers (which were randomly initialized)
     # i.e. freeze all convolutional InceptionV3 layers
@@ -55,7 +57,7 @@ def instantiate(n_classes, n_dense=2048, n_binary=32, inception_json="inceptionv
         layer.trainable = False
 
     # compile the model (should be done *after* setting layers to non-trainable)
-    model.compile(optimizer='rmsprop', loss='categorical_crossentropy')
+    model.compile(optimizer='rmsprop', loss='binary_crossentropy')
 
     # serialize model to json
     model_json = model.to_json()
@@ -67,10 +69,11 @@ def instantiate(n_classes, n_dense=2048, n_binary=32, inception_json="inceptionv
 
 
 
-def finetune(base_model, model, train_dir, val_dir,
-             epochs_1=15, epochs_2=30, patience_1=1, patience_2=1, batch_size=32,
-             nb_train_samples=85639, nb_validation_samples=10694,
-             img_width=299, img_height=299, class_imbalance=True,
+def finetune(base_model, model, X_train, y_train, X_val, y_val,
+             epochs_1=1000, epochs_2=2000, patience_1=2, patience_2=2,
+             patience_lr=1, batch_size=32,
+             nb_train_samples=41000, nb_validation_samples=7611,
+             img_width=299, img_height=299, class_imbalance=False,
              inception_h5_1="inceptionv3_fine_tuned_1.h5", inception_h5_2="inceptionv3_fine_tuned_2.h5",
              inception_h5_check_point_1="inceptionv3_fine_tuned_check_point_1.h5", inception_h5_check_point_2="inceptionv3_fine_tuned_check_point_2.h5",
              layer_names_file="inceptionv3_mod_layer_names.txt", verbose=1):
@@ -82,26 +85,36 @@ def finetune(base_model, model, train_dir, val_dir,
     train_datagen = ImageDataGenerator(
         preprocessing_function=preprocess_input,
         horizontal_flip=True,
+        vertical_flip=True,
         zoom_range=0.1,
         width_shift_range=0.1,
-        height_shift_range=0.1)
+        height_shift_range=0.1,
+        rotation_range=180,
+        fill_mode='reflect')
 
     # this is the augmentation configuration we will use for testing:
-    # only rescaling
-    test_datagen = ImageDataGenerator(preprocessing_function=preprocess_input)
+    test_datagen = ImageDataGenerator(
+        preprocessing_function=preprocess_input,
+        horizontal_flip=True,
+        vertical_flip=True,
+        zoom_range=0.1,
+        width_shift_range=0.1,
+        height_shift_range=0.1,
+        rotation_range=180,
+        fill_mode='reflect')
 
     # define train & val data generators
-    train_generator = train_datagen.flow_from_directory(
-        train_dir,
-        target_size=(img_width, img_height),
+    train_generator = train_datagen.flow(
+        X_train,
+        y_train,
         batch_size=batch_size,
-        class_mode='categorical')
+        shuffle=True)
 
-    validation_generator = test_datagen.flow_from_directory(
-        val_dir,
-        target_size=(img_width, img_height),
+    validation_generator = test_datagen.flow(
+        X_val,
+        y_val,
         batch_size=batch_size,
-        class_mode='categorical')
+        shuffle=True)
 
     # get class weights
     if class_imbalance:
@@ -111,7 +124,7 @@ def finetune(base_model, model, train_dir, val_dir,
 
     if verbose >= 2:
         class_name_dict = {val:key for key,val in train_generator.class_indices.items()}
-        print {class_name_dict[key]:val for key,val in class_weight.items()}
+        print({class_name_dict[key]:val for key,val in class_weight.items()})
 
     # train the model on the new data for a few epochs on the batches generated by datagen.flow().
     model.fit_generator(
@@ -121,7 +134,8 @@ def finetune(base_model, model, train_dir, val_dir,
         validation_data=validation_generator,
         validation_steps=nb_validation_samples // batch_size,
         callbacks=[EarlyStopping(monitor='val_loss', patience=patience_1),
-                   ModelCheckpoint(filepath=inception_h5_check_point_1, verbose=1, save_best_only=True)],
+                   ModelCheckpoint(filepath=inception_h5_check_point_1, save_best_only=True),
+                   ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=patience_lr)],
         class_weight=class_weight)
 
     # save weights just in case
@@ -136,7 +150,7 @@ def finetune(base_model, model, train_dir, val_dir,
     with open(layer_names_file, "w") as iOF:
         for ix, layer in enumerate(base_model.layers):
             iOF.write("%d, %s\n"%(ix, layer.name))
-            print ix, layer.name
+            if verbose >= 2: print(ix, layer.name)
 
     # we chose to train the top 2 inception blocks, i.e. we will freeze
     # the first 172 layers and unfreeze the rest:
@@ -147,7 +161,7 @@ def finetune(base_model, model, train_dir, val_dir,
 
     # we need to recompile the model for these modifications to take effect
     # we use SGD with a low learning rate
-    model.compile(optimizer=SGD(lr=0.0001, momentum=0.9), loss='categorical_crossentropy')
+    model.compile(optimizer=SGD(lr=0.0001, momentum=0.9), loss='binary_crossentropy')
 
     # we train our model again (this time fine-tuning the top 2 inception blocks
     # alongside the top Dense layers
@@ -158,7 +172,8 @@ def finetune(base_model, model, train_dir, val_dir,
         validation_data=validation_generator,
         validation_steps=nb_validation_samples // batch_size,
         callbacks=[EarlyStopping(monitor='val_loss', patience=patience_2),
-                   ModelCheckpoint(filepath=inception_h5_check_point_2, verbose=1, save_best_only=True)],
+                   ModelCheckpoint(filepath=inception_h5_check_point_2, save_best_only=True),
+                   ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=patience_lr)],
         class_weight=class_weight)
 
     # save final weights
@@ -168,10 +183,10 @@ def finetune(base_model, model, train_dir, val_dir,
 
 
 def finetune_from_saved(inception_h5_load_from, inception_h5_save_to,
-             inception_json, train_dir, val_dir, nb_freeze=0,
-             epochs=50, patience=2, batch_size=32,
+             inception_json, X_train, y_train, X_val, y_val, nb_freeze=0,
+             epochs=5000, patience=2, patience_lr=1, batch_size=32,
              nb_train_samples=85639, nb_validation_samples=10694,
-             img_width=299, img_height=299, class_imbalance=True,
+             img_width=299, img_height=299, class_imbalance=False,
              inception_h5_check_point="inceptionv3_fine_tuned_check_point_3.h5", verbose=1):
     """
     Finetune the inception v3 from already fine-tuned one.
@@ -183,7 +198,7 @@ def finetune_from_saved(inception_h5_load_from, inception_h5_save_to,
     loaded_model = model_from_json(loaded_model_json)
     # load weights into new model
     loaded_model.load_weights(inception_h5_load_from)
-    if verbose >= 1: print "Loaded model from disk"
+    if verbose >= 1: print("Loaded model from disk")
 
     # we freeze the first nb_freeze layers and unfreeze the rest:
     for layer in loaded_model.layers[:nb_freeze]:
@@ -193,32 +208,42 @@ def finetune_from_saved(inception_h5_load_from, inception_h5_save_to,
 
     # we need to recompile the model for these modifications to take effect
     # we use SGD with a low learning rate
-    loaded_model.compile(optimizer=SGD(lr=0.00001, momentum=0.9), loss='categorical_crossentropy')
+    loaded_model.compile(optimizer=SGD(lr=0.00001, momentum=0.9), loss='binary_crossentropy')
 
     # this is the augmentation configuration we will use for training
     train_datagen = ImageDataGenerator(
         preprocessing_function=preprocess_input,
         horizontal_flip=True,
+        vertical_flip=True,
         zoom_range=0.1,
         width_shift_range=0.1,
-        height_shift_range=0.1)
+        height_shift_range=0.1,
+        rotation_range=180,
+        fill_mode='reflect')
 
     # this is the augmentation configuration we will use for testing:
-    # only rescaling
-    test_datagen = ImageDataGenerator(preprocessing_function=preprocess_input)
+    test_datagen = ImageDataGenerator(
+        preprocessing_function=preprocess_input,
+        horizontal_flip=True,
+        vertical_flip=True,
+        zoom_range=0.1,
+        width_shift_range=0.1,
+        height_shift_range=0.1,
+        rotation_range=180,
+        fill_mode='reflect')
 
     # define train & val data generators
-    train_generator = train_datagen.flow_from_directory(
-        train_dir,
-        target_size=(img_width, img_height),
+    train_generator = train_datagen.flow(
+        X_train,
+        y_train,
         batch_size=batch_size,
-        class_mode='categorical')
+        shuffle=True)
 
-    validation_generator = test_datagen.flow_from_directory(
-        val_dir,
-        target_size=(img_width, img_height),
+    validation_generator = test_datagen.flow(
+        X_val,
+        y_val,
         batch_size=batch_size,
-        class_mode='categorical')
+        shuffle=True)
 
     # get class weights
     if class_imbalance:
@@ -234,7 +259,8 @@ def finetune_from_saved(inception_h5_load_from, inception_h5_save_to,
         validation_data=validation_generator,
         validation_steps=nb_validation_samples // batch_size,
         callbacks=[EarlyStopping(monitor='val_loss', patience=patience),
-                   ModelCheckpoint(filepath=inception_h5_check_point, verbose=1, save_best_only=True)],
+                   ModelCheckpoint(filepath=inception_h5_check_point, verbose=1, save_best_only=True),
+                   ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=patience_lr)],
         class_weight=class_weight)
 
     # save weights
@@ -277,24 +303,73 @@ def get_class_weights(y, smooth_factor=0):
 
 
 
+def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
+                     model_dir="../data/planet_amazon/models/",
+                     image_dir="../data/planet_amazon/train_jpg/",
+                     verbose=1):
+    """
+    Train an Inception V3 for a fold.
+    """
 
-def main(verbose=1):
-    """
-    Main function.
-    """
+    if verbose >= 1: print("Training for fold %d..."%fold_id)
+
+    ### Load images
+    if verbose >= 1: print("\tLoading images into RAM (fold %d)..."%fold_id)
+    X_train, y_train = [], []
+    X_val, y_val = [], []
+    # for train and validation
+    for df, X, img_dir in [(df_train, X_train, train_dir), (df_val, X_val, validation_dir)]:
+        for image_id in df.image_name:
+            image_path = image_dir+str(image_id)+".jpg"
+            if os.path.exists(image_path):
+                try:
+                    img = load_img(image_path, target_size=target_size)
+                    arr = img_to_array(img)
+                    X.append(arr)
+                except OSError:
+                    if verbose >= 2: print("OSError on image %s."%image_path)
+            else:
+                raise(ValueError("Image %s does not exist."%image_path))
+    X_train = np.array(X_train)
+    X_val = np.array(X_val)
+    y_train = df_train.iloc[:,2:].values
+    y_val = df_val.iloc[:,2:].values
+    if verbose >= 1:
+        print(X_train.shape)
+        print(y_train.shape)
+        print(X_val.shape)
+        print(y_val.shape)
+        print(np.sum(y_train, axis=1))
+        print(np.sum(y_val, axis=1))
 
     ### Create model
-    if verbose >= 1: print "Instantiating Inception V3..."
-    base_model, model = instantiate(11, verbose=verbose)
+    if verbose >= 1: print("\tInstantiating Inception V3 (fold %d)..."%fold_id)
+    n_classes = y_train.shape[1]
+    base_model, model = instantiate(n_classes, n_dense=2048, inception_json=model_dir+"inceptionv3_mod_%d.json"%fold_id, verbose=verbose)
 
     ### Train model
-    train_dir = "/root/data/Modastylz/img_class/train"
-    val_dir = "/root/data/Modastylz/img_class/validation"
-    if verbose >= 1: print "Fine-tuning Inception V3 first two passes..."
-    finetune(base_model, model, train_dir, val_dir, verbose=verbose)
-    if verbose >= 1: print "Fine-tuning Inception V3 third pass..."
-    finetune_from_saved("inceptionv3_fine_tuned_check_point_2.h5", "inceptionv3_fine_tuned_3.h5",
-                        "inceptionv3_mod.json", train_dir, val_dir, verbose=verbose)
+    if verbose >= 1: print("\tFine-tuning Inception V3 first two passes (fold %d)..."%fold_id)
+    finetune(base_model, model, X_train, y_train, X_val, y_val, batch_size=64,
+             nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
+             patience_1=2, patience_2=2, patience_lr=1,
+             inception_h5_1=model_dir+"inceptionv3_fine_tuned_1_%d.h5"%fold_id,
+             inception_h5_2=model_dir+"inceptionv3_fine_tuned_2_%d.h5"%fold_id,
+             inception_h5_check_point_1=model_dir+"inceptionv3_fine_tuned_check_point_1_%d.h5"%fold_id,
+             inception_h5_check_point_2=model_dir+"inceptionv3_fine_tuned_check_point_2_%d.h5"%fold_id,
+             layer_names_file=model_dir+"inceptionv3_mod_layer_names.txt",
+             verbose=verbose)
+    del(base_model)
+    del(model)
+    if verbose >= 1: print("\tFine-tuning Inception V3 third pass (fold %d)..."%fold_id)
+    finetune_from_saved(model_dir+"inceptionv3_fine_tuned_check_point_2_%d.h5"%fold_id,
+                        model_dir+"inceptionv3_fine_tuned_3_%d.h5"%fold_id,
+                        model_dir+"inceptionv3_mod_%d.json"%fold_id,
+                        X_train, y_train, X_val, y_val, batch_size=64,
+                        patience=5, patience_lr=2,
+                        nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
+                        inception_h5_check_point=model_dir+"inceptionv3_fine_tuned_check_point_3_%d.h5"%fold_id,
+                        verbose=verbose)
+    K.clear_session()
 
 
 
@@ -303,4 +378,7 @@ def main(verbose=1):
 #                   Main
 #==============================================
 if __name__ == '__main__':
-    main(2)
+    fold_id = 0
+    df_train = pd.read_csv("../data/planet_amazon/train%d.csv"%fold_id)
+    df_val = pd.read_csv("../data/planet_amazon/val%d.csv"%fold_id)
+    train_for_a_fold(df_train, df_val, fold_id)
