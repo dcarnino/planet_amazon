@@ -8,7 +8,7 @@
 #==============================================
 import sys
 import os
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
+os.environ["CUDA_VISIBLE_DEVICES"]="1"
 import numpy as np
 import pandas as pd
 import time
@@ -24,6 +24,7 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from keras.applications.imagenet_utils import decode_predictions
 from keras.optimizers import SGD
 from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import fbeta_score
 #==============================================
 #                   Files
 #==============================================
@@ -32,13 +33,13 @@ from sklearn.preprocessing import LabelEncoder
 #==============================================
 #                   Functions
 #==============================================
-def instantiate(n_classes, n_dense=2048, inception_json="inceptionv3_mod.json", verbose=1):
+def instantiate(n_classes, n_dense=2048, inception_json="inceptionv3_mod.json", target_size=(256,256,3), verbose=1):
     """
     Instantiate the inception v3.
     """
 
     # create the base pre-trained model
-    base_model = InceptionV3(weights='imagenet', include_top=False)
+    base_model = InceptionV3(weights='imagenet', include_top=False, input_shape=target_size)
 
     # add a global spatial average pooling layer
     x = base_model.output
@@ -57,7 +58,7 @@ def instantiate(n_classes, n_dense=2048, inception_json="inceptionv3_mod.json", 
         layer.trainable = False
 
     # compile the model (should be done *after* setting layers to non-trainable)
-    model.compile(optimizer='rmsprop', loss='binary_crossentropy')
+    model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=[fbeta_score_keras])
 
     # serialize model to json
     model_json = model.to_json()
@@ -161,7 +162,7 @@ def finetune(base_model, model, X_train, y_train, X_val, y_val,
 
     # we need to recompile the model for these modifications to take effect
     # we use SGD with a low learning rate
-    model.compile(optimizer=SGD(lr=0.0001, momentum=0.9), loss='binary_crossentropy')
+    model.compile(optimizer=SGD(lr=0.0001, momentum=0.9), loss='binary_crossentropy', metrics=[fbeta_score_keras])
 
     # we train our model again (this time fine-tuning the top 2 inception blocks
     # alongside the top Dense layers
@@ -208,7 +209,7 @@ def finetune_from_saved(inception_h5_load_from, inception_h5_save_to,
 
     # we need to recompile the model for these modifications to take effect
     # we use SGD with a low learning rate
-    loaded_model.compile(optimizer=SGD(lr=0.00001, momentum=0.9), loss='binary_crossentropy')
+    loaded_model.compile(optimizer=SGD(lr=0.00001, momentum=0.9), loss='binary_crossentropy', metrics=[fbeta_score_keras])
 
     # this is the augmentation configuration we will use for training
     train_datagen = ImageDataGenerator(
@@ -299,6 +300,34 @@ def get_class_weights(y, smooth_factor=0):
     majority = max(counter.values())
 
     return {clss: float(majority / cnt) for clss, cnt in counter.items()}
+
+
+
+def f2_score(y_true, y_pred):
+    # fbeta_score throws a confusing error if inputs are not numpy arrays
+    y_true, y_pred = np.array(y_true), np.array(y_pred)
+    # We need to use average='samples' here, any other average method will generate bogus results
+    return fbeta_score(y_true, y_pred, beta=2, average='samples')
+
+
+
+def fbeta_score_keras(y_true, y_pred, threshold_shift=0, beta=2):
+
+    # just in case of hipster activation at the final layer
+    y_pred = K.clip(y_pred, 0, 1)
+
+    # shifting the prediction threshold from .5 if needed
+    y_pred_bin = K.round(y_pred + threshold_shift)
+
+    tp = K.sum(K.round(y_true * y_pred_bin)) + K.epsilon()
+    fp = K.sum(K.round(K.clip(y_pred_bin - y_true, 0, 1)))
+    fn = K.sum(K.round(K.clip(y_true - y_pred, 0, 1)))
+
+    precision = tp / (tp + fp)
+    recall = tp / (tp + fn)
+
+    beta_squared = beta ** 2
+    return (beta_squared + 1) * (precision * recall) / (beta_squared * precision + recall + K.epsilon())
 
 
 
