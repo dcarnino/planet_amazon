@@ -347,7 +347,7 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
     X_train, y_train = [], []
     X_val, y_val = [], []
     # for train and validation
-    for df, X, img_dir in [(df_train, X_train, train_dir), (df_val, X_val, validation_dir)]:
+    for df, X in [(df_train, X_train), (df_val, X_val)]:
         for image_id in df.image_name:
             image_path = image_dir+str(image_id)+".jpg"
             if os.path.exists(image_path):
