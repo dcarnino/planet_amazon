@@ -334,7 +334,7 @@ def fbeta_score_keras(y_true, y_pred, threshold_shift=0, beta=2):
 
 def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
                      model_dir="../data/planet_amazon/models/",
-                     image_dir="../data/planet_amazon/train_jpg/",
+                     image_dir="../data/planet_amazon/train-jpg/",
                      verbose=1):
     """
     Train an Inception V3 for a fold.
