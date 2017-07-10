@@ -50,6 +50,7 @@ if __name__ == '__main__':
         ix_val = np.array(ix_folds[fold_id])
         print(type(ix_train), ix_train.shape)
         print(type(ix_val), ix_val.shape)
+        print(ix_train)
         print(ix_train.min())
         print(ix_train.max())
         print(len(df_train.index))
