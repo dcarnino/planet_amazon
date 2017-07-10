@@ -410,4 +410,4 @@ if __name__ == '__main__':
     fold_id = 0
     df_train = pd.read_csv("../data/planet_amazon/train%d.csv"%fold_id)
     df_val = pd.read_csv("../data/planet_amazon/val%d.csv"%fold_id)
-    train_for_a_fold(df_train.head(96), df_val.head(48), fold_id)
+    train_for_a_fold(df_train.head(64), df_val.head(32), fold_id)
