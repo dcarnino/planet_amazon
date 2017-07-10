@@ -50,5 +50,8 @@ if __name__ == '__main__':
         ix_val = np.array(ix_folds[fold_id])
         print(type(ix_train), ix_train.shape)
         print(type(ix_val), ix_val.shape)
+        print(ix_train.min())
+        print(ix_train.max())
+        print(len(df_train.index))
         df_train.iloc[ix_train,:].to_csv("../data/planet_amazon/train%d.csv"%fold_id, index=False)
         df_train.iloc[ix_val,:].to_csv("../data/planet_amazon/val%d.csv"%fold_id, index=False)
