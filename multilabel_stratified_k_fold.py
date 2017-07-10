@@ -46,7 +46,7 @@ if __name__ == '__main__':
 
     # write to file
     for fold_id in range(n_folds):
-        ix_train = np.array(ix_folds[:fold_id] + [itm for lst in ix_folds[fold_id+1:] for itm in lst])
+        ix_train = np.array([itm for lst in ix_folds[:fold_id] for itm in lst] + [itm for lst in ix_folds[fold_id+1:] for itm in lst])
         ix_val = np.array(ix_folds[fold_id])
         print(type(ix_train), ix_train.shape)
         print(type(ix_val), ix_val.shape)
