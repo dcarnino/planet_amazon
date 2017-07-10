@@ -379,7 +379,7 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
 
     ### Train model
     if verbose >= 1: print("\tFine-tuning Inception V3 first two passes (fold %d)..."%fold_id)
-    finetune(base_model, model, X_train, y_train, X_val, y_val, batch_size=128,
+    finetune(base_model, model, X_train, y_train, X_val, y_val, batch_size=256,
              nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
              patience_1=2, patience_2=2, patience_lr=1,
              inception_h5_1=model_dir+"inceptionv3_fine_tuned_1_%d.h5"%fold_id,
@@ -394,7 +394,7 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
     finetune_from_saved(model_dir+"inceptionv3_fine_tuned_check_point_2_%d.h5"%fold_id,
                         model_dir+"inceptionv3_fine_tuned_3_%d.h5"%fold_id,
                         model_dir+"inceptionv3_mod_%d.json"%fold_id,
-                        X_train, y_train, X_val, y_val, batch_size=128,
+                        X_train, y_train, X_val, y_val, batch_size=256,
                         patience=5, patience_lr=2,
                         nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
                         inception_h5_check_point=model_dir+"inceptionv3_fine_tuned_check_point_3_%d.h5"%fold_id,
@@ -411,4 +411,4 @@ if __name__ == '__main__':
     fold_id = 0
     df_train = pd.read_csv("../data/planet_amazon/train%d.csv"%fold_id)
     df_val = pd.read_csv("../data/planet_amazon/val%d.csv"%fold_id)
-    train_for_a_fold(df_train.head(1000), df_val.head(1000), fold_id)
+    train_for_a_fold(df_train.head(600), df_val.head(600), fold_id)
