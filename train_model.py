@@ -120,7 +120,7 @@ def finetune(base_model, model, X_train, y_train, X_val, y_val,
 
     # get class weights
     if class_imbalance:
-        class_weight = get_class_weights(train_generator.classes, smooth_factor=0.1)
+        class_weight = get_class_weights(np.sum(y_train, axis=0), smooth_factor=0.1)
     else:
         class_weight = None
 
@@ -249,7 +249,7 @@ def finetune_from_saved(inception_h5_load_from, inception_h5_save_to,
 
     # get class weights
     if class_imbalance:
-        class_weight = get_class_weights(train_generator.classes, smooth_factor=0.1)
+        class_weight = get_class_weights(np.sum(y_train, axis=0), smooth_factor=0.1)
     else:
         class_weight = None
 
@@ -291,16 +291,14 @@ def get_class_weights(y, smooth_factor=0):
     :param y: list of true labels (the labels must be hashable)
     :return: dictionary with the weight for each class
     """
-    counter = Counter(y)
 
     if smooth_factor > 0:
-        p = max(counter.values()) * smooth_factor
-        for k in counter.keys():
-            counter[k] += p
+        p = y.max() * smooth_factor
+        y = y + p
 
-    majority = max(counter.values())
+    majority = float(y.max())
 
-    return {clss: float(majority / cnt) for clss, cnt in counter.items()}
+    return {clss: (majority / cnt) for clss, cnt in enumerate(y)}
 
 
 
