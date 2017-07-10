@@ -46,9 +46,9 @@ if __name__ == '__main__':
 
     # write to file
     for fold_id in range(n_folds):
-        ix_train = ix_folds[:fold_id] + [itm for lst in ix_folds[fold_id+1:] for itm in lst]
-        ix_val = ix_folds[fold_id]
-        print(type(ix_train), len(ix_train))
-        print(type(ix_val), len(ix_val))
-        df_train.iloc[ix_train,:].to_csv("train%d.csv"%fold_id, index=False)
-        df_train.iloc[ix_val,:].to_csv("val%d.csv"%fold_id, index=False)
+        ix_train = np.array(ix_folds[:fold_id] + [itm for lst in ix_folds[fold_id+1:] for itm in lst])
+        ix_val = np.array(ix_folds[fold_id])
+        print(type(ix_train), ix_train.shape)
+        print(type(ix_val), ix_val.shape)
+        df_train.iloc[ix_train,:].to_csv("../data/planet_amazon/train%d.csv"%fold_id, index=False)
+        df_train.iloc[ix_val,:].to_csv("../data/planet_amazon/val%d.csv"%fold_id, index=False)
