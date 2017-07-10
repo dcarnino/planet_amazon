@@ -8,7 +8,7 @@
 #==============================================
 import sys
 import os
-os.environ["CUDA_VISIBLE_DEVICES"]="1"
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
 import numpy as np
 import pandas as pd
 import time
@@ -407,7 +407,7 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
 #                   Main
 #==============================================
 if __name__ == '__main__':
-    fold_id = 0
+    fold_id = 1
     df_train = pd.read_csv("../data/planet_amazon/train%d.csv"%fold_id)
     df_val = pd.read_csv("../data/planet_amazon/val%d.csv"%fold_id)
     train_for_a_fold(df_train, df_val, fold_id)
