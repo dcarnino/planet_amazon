@@ -42,10 +42,13 @@ if __name__ == '__main__':
     # stratified k-fold
     n_folds = 5
     ix_folds = proba_mass_split(y_train, n_folds=n_folds)
+    print(type(ix_folds), len(ix_folds))
 
     # write to file
     for fold_id in range(n_folds):
         ix_train = ix_folds[:fold_id] + ix_folds[fold_id+1:]
         ix_val = ix_folds[fold_id]
+        print(type(ix_train), len(ix_train))
+        print(type(ix_val), len(ix_val))
         df_train.iloc[ix_train,:].to_csv("train%d.csv"%fold_id, index=False)
         df_train.iloc[ix_val,:].to_csv("val%d.csv"%fold_id, index=False)
