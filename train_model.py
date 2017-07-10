@@ -261,7 +261,7 @@ def finetune_from_saved(inception_h5_load_from, inception_h5_save_to,
         validation_data=validation_generator,
         validation_steps=nb_validation_samples // batch_size,
         callbacks=[EarlyStopping(monitor='val_loss', patience=patience),
-                   ModelCheckpoint(filepath=inception_h5_check_point, verbose=1, save_best_only=True),
+                   ModelCheckpoint(filepath=inception_h5_check_point, save_best_only=True),
                    ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=patience_lr)],
         class_weight=class_weight)
 
@@ -410,4 +410,4 @@ if __name__ == '__main__':
     fold_id = 0
     df_train = pd.read_csv("../data/planet_amazon/train%d.csv"%fold_id)
     df_val = pd.read_csv("../data/planet_amazon/val%d.csv"%fold_id)
-    train_for_a_fold(df_train.head(64), df_val.head(32), fold_id)
+    train_for_a_fold(df_train, df_val, fold_id)
