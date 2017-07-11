@@ -321,7 +321,7 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
     X_val, y_val = [], []
     # for train and validation
     for df, X, y in [(df_train, X_train, y_train), (df_val, X_val, y_val)]:
-        for image_id, y_lab in tqdm(zip(df.image_name, df.iloc[:,2:].values), miniters=100):
+        for image_id, y_lab in tqdm(list(zip(df.image_name, df.iloc[:,2:].values)), miniters=100):
             image_path = image_dir+str(image_id)+".jpg"
             if os.path.exists(image_path):
                 try:
