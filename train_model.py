@@ -173,7 +173,7 @@ def finetune_from_saved(inception_h5_load_from, inception_h5_save_to,
 
     # we need to recompile the model for these modifications to take effect
     # we use SGD with a low learning rate
-    loaded_model.compile(optimizer=Adam(lr=0.001), loss='binary_crossentropy', metrics=[fbs])
+    loaded_model.compile(optimizer=Adam(lr=0.0002), loss='binary_crossentropy', metrics=[fbs])
 
     # this is the augmentation configuration we will use for training
     train_datagen = ImageDataGenerator(
@@ -340,7 +340,7 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
 
     ### Train model
     if verbose >= 1: print("\tFine-tuning Inception V3 first pass (fold %d)..."%fold_id)
-    finetune(base_model, model, X_train, y_train, X_val, y_val, batch_size=32, epochs_1=1,
+    finetune(base_model, model, X_train, y_train, X_val, y_val, batch_size=32, epochs_1=5,
              nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
              patience_1=2, patience_lr=1, class_imbalance=True,
              inception_h5_1=model_dir+"inceptionv3_fine_tuned_1_%d.h5"%fold_id,
