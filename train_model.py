@@ -30,6 +30,7 @@ from tqdm import tqdm
 #==============================================
 #                   Files
 #==============================================
+_EPSILON = K.epsilon()
 
 
 #==============================================
@@ -60,7 +61,7 @@ def instantiate(n_classes, n_dense=2048, inception_json="inceptionv3_mod.json", 
         layer.trainable = False
 
     # compile the model (should be done *after* setting layers to non-trainable)
-    model.compile(optimizer=Adam(lr=0.0005), loss='binary_crossentropy', metrics=[fbs])
+    model.compile(optimizer=Adam(lr=0.0005), loss=fb_loss_tensor, metrics=[fbs])
 
     # serialize model to json
     model_json = model.to_json()
@@ -121,7 +122,7 @@ def finetune(base_model, model, X_train, y_train, X_val, y_val,
 
     # get class weights
     if class_imbalance:
-        class_weight = {0: 1., 1: 4.}
+        class_weight = get_class_weights(np.sum(y_train, axis=0), smooth_factor=0.1)
     else:
         class_weight = None
 
@@ -169,7 +170,7 @@ def finetune_from_saved(inception_h5_load_from, inception_h5_save_to,
 
     # we need to recompile the model for these modifications to take effect
     # we use SGD with a low learning rate
-    loaded_model.compile(optimizer=Adam(lr=0.0002), loss='binary_crossentropy', metrics=[fbs])
+    loaded_model.compile(optimizer=Adam(lr=0.0002), loss=fb_loss_tensor, metrics=[fbs])
 
     # this is the augmentation configuration we will use for training
     train_datagen = ImageDataGenerator(
@@ -208,7 +209,7 @@ def finetune_from_saved(inception_h5_load_from, inception_h5_save_to,
 
     # get class weights
     if class_imbalance:
-        class_weight = {0: 1., 1: 4.}
+        class_weight = get_class_weights(np.sum(y_train, axis=0), smooth_factor=0.1)
     else:
         class_weight = None
 
@@ -286,6 +287,24 @@ def fbs(y_true, y_pred, threshold_shift=0.3, beta=2):
 
     beta_squared = beta ** 2
     return (beta_squared + 1) * (precision * recall) / (beta_squared * precision + recall + K.epsilon())
+
+
+
+def fb_loss_tensor(y_true, y_pred, threshold_shift=0.3, beta=2):
+    y_pred = K.clip(y_pred + threshold_shift, _EPSILON, 1.0-_EPSILON)
+
+    tp = y_true * y_pred + _EPSILON
+    fp = y_pred * ( 1. -  y_true )
+    fn = ( 1. - y_pred ) * y_true
+
+    precision = tp / (tp + fp)
+    recall = tp / (tp + fn)
+
+    beta_squared = beta ** 2
+
+    out = 1.0 - (beta_squared + 1) * (precision * recall) / (beta_squared * precision + recall + _EPSILON)
+
+    return K.mean(out, axis=-1)
 
 
 
