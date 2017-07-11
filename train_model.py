@@ -323,11 +323,6 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
                 try:
                     img = load_img(image_path, target_size=target_size)
                     arr = img_to_array(img)
-                    print(y_lab)
-                    print(label_counts)
-                    print(label_counts*y_lab)
-                    print(np.max(label_counts*y_lab))
-                    raise(ValueError)
                     for _ in range(max((int(np.max(label_counts * y_lab)), n_max_img))):
                         X.append(arr)
                         y.append(y_lab)
