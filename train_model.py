@@ -89,9 +89,9 @@ def finetune(base_model, model, X_train, y_train, X_val, y_val,
         preprocessing_function=preprocess_input,
         horizontal_flip=True,
         vertical_flip=True,
-        zoom_range=0.1,
-        width_shift_range=0.1,
-        height_shift_range=0.1,
+        zoom_range=0.15,
+        width_shift_range=0.15,
+        height_shift_range=0.15,
         rotation_range=180,
         fill_mode='reflect')
 
@@ -100,9 +100,9 @@ def finetune(base_model, model, X_train, y_train, X_val, y_val,
         preprocessing_function=preprocess_input,
         horizontal_flip=True,
         vertical_flip=True,
-        zoom_range=0.1,
-        width_shift_range=0.1,
-        height_shift_range=0.1,
+        zoom_range=0.15,
+        width_shift_range=0.15,
+        height_shift_range=0.15,
         rotation_range=180,
         fill_mode='reflect')
 
@@ -121,7 +121,7 @@ def finetune(base_model, model, X_train, y_train, X_val, y_val,
 
     # get class weights
     if class_imbalance:
-        class_weight = get_class_weights(np.sum(y_train, axis=0), smooth_factor=0.1)
+        class_weight = {0: 1., 1: 4.}
     else:
         class_weight = None
 
@@ -180,9 +180,9 @@ def finetune_from_saved(inception_h5_load_from, inception_h5_save_to,
         preprocessing_function=preprocess_input,
         horizontal_flip=True,
         vertical_flip=True,
-        zoom_range=0.1,
-        width_shift_range=0.1,
-        height_shift_range=0.1,
+        zoom_range=0.15,
+        width_shift_range=0.15,
+        height_shift_range=0.15,
         rotation_range=180,
         fill_mode='reflect')
 
@@ -191,9 +191,9 @@ def finetune_from_saved(inception_h5_load_from, inception_h5_save_to,
         preprocessing_function=preprocess_input,
         horizontal_flip=True,
         vertical_flip=True,
-        zoom_range=0.1,
-        width_shift_range=0.1,
-        height_shift_range=0.1,
+        zoom_range=0.15,
+        width_shift_range=0.15,
+        height_shift_range=0.15,
         rotation_range=180,
         fill_mode='reflect')
 
@@ -212,7 +212,7 @@ def finetune_from_saved(inception_h5_load_from, inception_h5_save_to,
 
     # get class weights
     if class_imbalance:
-        class_weight = get_class_weights(np.sum(y_train, axis=0), smooth_factor=0.1)
+        class_weight = {0: 1., 1: 4.}
     else:
         class_weight = None
 
@@ -304,27 +304,40 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
 
     if verbose >= 1: print("Training for fold %d..."%fold_id)
 
+    ### Prepare weights
+    labels = ['agriculture', 'artisinal_mine', 'bare_ground', 'blooming',\
+              'blow_down', 'clear', 'cloudy', 'conventional_mine', 'cultivation',\
+              'habitation', 'haze', 'partly_cloudy', 'primary', 'road',\
+              'selective_logging', 'slash_burn', 'water']
+    n_labels = np.array([12315, 339, 862, 332, 98, 28431,
+                         9350, 100, 4477, 3660, 2697, 7261,
+                         37513, 8071, 340, 209, 7411])
+    label_weights = np.array([cw for cid, cw in sorted(get_class_weights(n_labels).items())])
+    label_counts = np.ceil( 10. * label_weights / label_weights.max() ).astype(int)
+
     ### Load images
     if verbose >= 1: print("\tLoading images into RAM (fold %d)..."%fold_id)
-    X_train, y_train = [], []
+    X_train, X_val = [], []
     X_val, y_val = [], []
     # for train and validation
-    for df, X in [(df_train, X_train), (df_val, X_val)]:
-        for image_id in tqdm(df.image_name, miniters=100):
+    for df, X, y in [(df_train, X_train, y_train), (df_val, X_val, y_val)]:
+        for image_id, y_lab in tqdm(zip(df.image_name, df.iloc[:,2:].values), miniters=100):
             image_path = image_dir+str(image_id)+".jpg"
             if os.path.exists(image_path):
                 try:
                     img = load_img(image_path, target_size=target_size)
                     arr = img_to_array(img)
-                    X.append(arr)
+                    for _ in range(int(np.max(label_counts * y_lab))):
+                        X.append(arr)
+                        y.append(y_lab)
                 except OSError:
                     if verbose >= 2: print("OSError on image %s."%image_path)
             else:
                 raise(ValueError("Image %s does not exist."%image_path))
     X_train = np.array(X_train)
     X_val = np.array(X_val)
-    y_train = df_train.iloc[:,2:].values
-    y_val = df_val.iloc[:,2:].values
+    y_train = np.array(y_train)
+    y_val = np.array(y_val)
     if verbose >= 2:
         print(X_train.shape)
         print(y_train.shape)
@@ -370,4 +383,4 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
 if __name__ == '__main__':
     df_train = pd.read_csv("../data/planet_amazon/train%d.csv"%fold_id)
     df_val = pd.read_csv("../data/planet_amazon/val%d.csv"%fold_id)
-    train_for_a_fold(df_train, df_val, fold_id)
+    train_for_a_fold(df_train, df_val, fold_id, verbose=2)
