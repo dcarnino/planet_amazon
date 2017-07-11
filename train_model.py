@@ -6,9 +6,10 @@
 #==============================================
 #                   Modules
 #==============================================
-import sys
 import os
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
+import sys
+fold_id = int(sys.argv[1])
+os.environ["CUDA_VISIBLE_DEVICES"]="%d"%(fold_id%2)
 import numpy as np
 import pandas as pd
 import time
@@ -22,7 +23,7 @@ from keras.layers import Dense, GlobalAveragePooling2D
 from keras import backend as K
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from keras.applications.imagenet_utils import decode_predictions
-from keras.optimizers import SGD
+from keras.optimizers import SGD, Adam
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import fbeta_score
 from tqdm import tqdm
@@ -59,7 +60,7 @@ def instantiate(n_classes, n_dense=2048, inception_json="inceptionv3_mod.json", 
         layer.trainable = False
 
     # compile the model (should be done *after* setting layers to non-trainable)
-    model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=[fbs])
+    model.compile(optimizer=Adam(lr=0.01), loss='binary_crossentropy', metrics=[fbs])
 
     # serialize model to json
     model_json = model.to_json()
@@ -72,12 +73,12 @@ def instantiate(n_classes, n_dense=2048, inception_json="inceptionv3_mod.json", 
 
 
 def finetune(base_model, model, X_train, y_train, X_val, y_val,
-             epochs_1=1000, epochs_2=2000, patience_1=2, patience_2=2,
+             epochs_1=1000, patience_1=2,
              patience_lr=1, batch_size=32,
              nb_train_samples=41000, nb_validation_samples=7611,
              img_width=299, img_height=299, class_imbalance=False,
-             inception_h5_1="inceptionv3_fine_tuned_1.h5", inception_h5_2="inceptionv3_fine_tuned_2.h5",
-             inception_h5_check_point_1="inceptionv3_fine_tuned_check_point_1.h5", inception_h5_check_point_2="inceptionv3_fine_tuned_check_point_2.h5",
+             inception_h5_1="inceptionv3_fine_tuned_1.h5",
+             inception_h5_check_point_1="inceptionv3_fine_tuned_check_point_1.h5",
              layer_names_file="inceptionv3_mod_layer_names.txt", verbose=1):
     """
     Finetune the inception v3.
@@ -143,53 +144,15 @@ def finetune(base_model, model, X_train, y_train, X_val, y_val,
     # save weights just in case
     model.save_weights(inception_h5_1)
 
-    # at this point, the top layers are well trained and we can start fine-tuning
-    # convolutional layers from inception V3. We will freeze the bottom N layers
-    # and train the remaining top layers.
-
-    # let's visualize layer names and layer indices to see how many layers
-    # we should freeze:
-    with open(layer_names_file, "w") as iOF:
-        for ix, layer in enumerate(base_model.layers):
-            iOF.write("%d, %s\n"%(ix, layer.name))
-            if verbose >= 2: print(ix, layer.name)
-
-    # we chose to train the top 2 inception blocks, i.e. we will freeze
-    # the first 172 layers and unfreeze the rest:
-    for layer in model.layers[:172]:
-        layer.trainable = False
-    for layer in model.layers[172:]:
-        layer.trainable = True
-
-    # we need to recompile the model for these modifications to take effect
-    # we use SGD with a low learning rate
-    model.compile(optimizer=SGD(lr=0.0001, momentum=0.9), loss='binary_crossentropy', metrics=[fbs])
-
-    # we train our model again (this time fine-tuning the top 2 inception blocks
-    # alongside the top Dense layers
-    model.fit_generator(
-        train_generator,
-        steps_per_epoch=nb_train_samples // batch_size,
-        epochs=epochs_2,
-        validation_data=validation_generator,
-        validation_steps=nb_validation_samples // batch_size,
-        callbacks=[EarlyStopping(monitor='val_loss', patience=patience_2),
-                   ModelCheckpoint(filepath=inception_h5_check_point_2, save_best_only=True),
-                   ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=patience_lr)],
-        class_weight=class_weight)
-
-    # save final weights
-    model.save_weights(inception_h5_2)
-
 
 
 
 def finetune_from_saved(inception_h5_load_from, inception_h5_save_to,
-             inception_json, X_train, y_train, X_val, y_val, nb_freeze=0,
+             inception_json, X_train, y_train, X_val, y_val, nb_freeze=172,
              epochs=5000, patience=2, patience_lr=1, batch_size=32,
              nb_train_samples=85639, nb_validation_samples=10694,
              img_width=299, img_height=299, class_imbalance=False,
-             inception_h5_check_point="inceptionv3_fine_tuned_check_point_3.h5", verbose=1):
+             inception_h5_check_point="inceptionv3_fine_tuned_check_point_2.h5", verbose=1):
     """
     Finetune the inception v3 from already fine-tuned one.
     """
@@ -210,7 +173,7 @@ def finetune_from_saved(inception_h5_load_from, inception_h5_save_to,
 
     # we need to recompile the model for these modifications to take effect
     # we use SGD with a low learning rate
-    loaded_model.compile(optimizer=SGD(lr=0.00001, momentum=0.9), loss='binary_crossentropy', metrics=[fbs])
+    loaded_model.compile(optimizer=Adam(lr=0.001), loss='binary_crossentropy', metrics=[fbs])
 
     # this is the augmentation configuration we will use for training
     train_datagen = ImageDataGenerator(
@@ -376,27 +339,25 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
     base_model, model = instantiate(n_classes, n_dense=2048, inception_json=model_dir+"inceptionv3_mod_%d.json"%fold_id, verbose=verbose)
 
     ### Train model
-    if verbose >= 1: print("\tFine-tuning Inception V3 first two passes (fold %d)..."%fold_id)
+    if verbose >= 1: print("\tFine-tuning Inception V3 first pass (fold %d)..."%fold_id)
     finetune(base_model, model, X_train, y_train, X_val, y_val, batch_size=32,
              nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
-             patience_1=2, patience_2=2, patience_lr=1, class_imbalance=True,
+             patience_1=2, patience_lr=1, class_imbalance=True,
              inception_h5_1=model_dir+"inceptionv3_fine_tuned_1_%d.h5"%fold_id,
-             inception_h5_2=model_dir+"inceptionv3_fine_tuned_2_%d.h5"%fold_id,
              inception_h5_check_point_1=model_dir+"inceptionv3_fine_tuned_check_point_1_%d.h5"%fold_id,
-             inception_h5_check_point_2=model_dir+"inceptionv3_fine_tuned_check_point_2_%d.h5"%fold_id,
              layer_names_file=model_dir+"inceptionv3_mod_layer_names.txt",
              verbose=verbose)
     del(base_model)
     del(model)
     K.clear_session()
-    if verbose >= 1: print("\tFine-tuning Inception V3 third pass (fold %d)..."%fold_id)
-    finetune_from_saved(model_dir+"inceptionv3_fine_tuned_check_point_2_%d.h5"%fold_id,
-                        model_dir+"inceptionv3_fine_tuned_3_%d.h5"%fold_id,
+    if verbose >= 1: print("\tFine-tuning Inception V3 second pass (fold %d)..."%fold_id)
+    finetune_from_saved(model_dir+"inceptionv3_fine_tuned_check_point_1_%d.h5"%fold_id,
+                        model_dir+"inceptionv3_fine_tuned_2_%d.h5"%fold_id,
                         model_dir+"inceptionv3_mod_%d.json"%fold_id,
-                        X_train, y_train, X_val, y_val, batch_size=32,
+                        X_train, y_train, X_val, y_val, batch_size=32, nb_freeze=0,
                         patience=10, patience_lr=3, class_imbalance=True,
                         nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
-                        inception_h5_check_point=model_dir+"inceptionv3_fine_tuned_check_point_3_%d.h5"%fold_id,
+                        inception_h5_check_point=model_dir+"inceptionv3_fine_tuned_check_point_2_%d.h5"%fold_id,
                         verbose=verbose)
     K.clear_session()
 
@@ -407,7 +368,6 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
 #                   Main
 #==============================================
 if __name__ == '__main__':
-    fold_id = 1
     df_train = pd.read_csv("../data/planet_amazon/train%d.csv"%fold_id)
     df_val = pd.read_csv("../data/planet_amazon/val%d.csv"%fold_id)
     train_for_a_fold(df_train, df_val, fold_id)
