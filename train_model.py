@@ -60,7 +60,7 @@ def instantiate(n_classes, n_dense=2048, inception_json="inceptionv3_mod.json", 
         layer.trainable = False
 
     # compile the model (should be done *after* setting layers to non-trainable)
-    model.compile(optimizer=Adam(lr=0.01), loss='binary_crossentropy', metrics=[fbs])
+    model.compile(optimizer=Adam(lr=0.002), loss='binary_crossentropy', metrics=[fbs])
 
     # serialize model to json
     model_json = model.to_json()
