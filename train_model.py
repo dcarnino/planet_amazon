@@ -61,7 +61,7 @@ def instantiate(n_classes, n_dense=2048, inception_json="inceptionv3_mod.json", 
         layer.trainable = False
 
     # compile the model (should be done *after* setting layers to non-trainable)
-    model.compile(optimizer=Adam(lr=0.0005), loss=fb_loss_tensor, metrics=[fbs])
+    model.compile(optimizer=Adam(lr=0.0005), loss=binary_crossentropy_weighted, metrics=[fbs])
 
     # serialize model to json
     model_json = model.to_json()
@@ -170,7 +170,7 @@ def finetune_from_saved(inception_h5_load_from, inception_h5_save_to,
 
     # we need to recompile the model for these modifications to take effect
     # we use SGD with a low learning rate
-    loaded_model.compile(optimizer=Adam(lr=0.0002), loss=fb_loss_tensor, metrics=[fbs])
+    loaded_model.compile(optimizer=Adam(lr=0.0002), loss=binary_crossentropy_weighted, metrics=[fbs])
 
     # this is the augmentation configuration we will use for training
     train_datagen = ImageDataGenerator(
@@ -290,20 +290,9 @@ def fbs(y_true, y_pred, threshold_shift=0.3, beta=2):
 
 
 
-def fb_loss_tensor(y_true, y_pred, threshold_shift=0.3, beta=2):
-    y_pred = K.clip(y_pred + threshold_shift, _EPSILON, 1.0-_EPSILON)
-
-    tp = y_true * y_pred + _EPSILON
-    fp = y_pred * ( 1. -  y_true )
-    fn = ( 1. - y_pred ) * y_true
-
-    precision = tp / (tp + fp)
-    recall = tp / (tp + fn)
-
-    beta_squared = beta ** 2
-
-    out = 1.0 - (beta_squared + 1) * (precision * recall) / (beta_squared * precision + recall + _EPSILON)
-
+def binary_crossentropy_weighted(y_true, y_pred, one_weight=4.):
+    y_weight = K.clip(y_true * one_weight, 1., one_weight)
+    out = K.binary_crossentropy(y_pred, y_true) * y_weight
     return K.mean(out, axis=-1)
 
 
@@ -342,7 +331,7 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
                 try:
                     img = load_img(image_path, target_size=target_size)
                     arr = img_to_array(img)
-                    for _ in range(max((int(np.max(label_counts * y_lab)), n_max_img))):
+                    for _ in range(min((int(np.max(label_counts * y_lab)), n_max_img))):
                         X.append(arr)
                         y.append(y_lab)
                 except OSError:
@@ -370,7 +359,7 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
     if verbose >= 1: print("\tFine-tuning Inception V3 first pass (fold %d)..."%fold_id)
     finetune(base_model, model, X_train, y_train, X_val, y_val, batch_size=32, epochs_1=5,
              nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
-             patience_1=2, patience_lr=1, class_imbalance=True,
+             patience_1=2, patience_lr=1, class_imbalance=True,'binary_crossentropy'
              inception_h5_1=model_dir+"inceptionv3_fine_tuned_1_%d.h5"%fold_id,
              inception_h5_check_point_1=model_dir+"inceptionv3_fine_tuned_check_point_1_%d.h5"%fold_id,
              layer_names_file=model_dir+"inceptionv3_mod_layer_names.txt",
@@ -398,4 +387,4 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
 if __name__ == '__main__':
     df_train = pd.read_csv("../data/planet_amazon/train%d.csv"%fold_id)
     df_val = pd.read_csv("../data/planet_amazon/val%d.csv"%fold_id)
-    train_for_a_fold(df_train, df_val, fold_id, verbose=2)
+    train_for_a_fold(df_train.head(500), df_val.head(100), fold_id, verbose=2)
