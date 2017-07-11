@@ -320,14 +320,14 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
     X_train, y_train = [], []
     X_val, y_val = [], []
     # for train and validation
-    for df, X, y in [(df_train, X_train, y_train), (df_val, X_val, y_val)]:
+    for df, X, y, n_max_img in [(df_train, X_train, y_train, 10), (df_val, X_val, y_val, 1)]:
         for image_id, y_lab in tqdm(list(zip(df.image_name, df.iloc[:,2:].values)), miniters=100):
             image_path = image_dir+str(image_id)+".jpg"
             if os.path.exists(image_path):
                 try:
                     img = load_img(image_path, target_size=target_size)
                     arr = img_to_array(img)
-                    for _ in range(int(np.max(label_counts * y_lab))):
+                    for _ in range(max((int(np.max(label_counts * y_lab)), n_max_img))):
                         X.append(arr)
                         y.append(y_lab)
                 except OSError:
