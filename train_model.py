@@ -273,7 +273,7 @@ def f2_score(y_true, y_pred):
 
 
 
-def fbs(y_true, y_pred, threshold_shift=0, beta=2):
+def fbs(y_true, y_pred, threshold_shift=0.3, beta=2):
 
     # just in case of hipster activation at the final layer
     y_pred = K.clip(y_pred, 0, 1)
