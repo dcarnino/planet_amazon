@@ -317,7 +317,7 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
 
     ### Load images
     if verbose >= 1: print("\tLoading images into RAM (fold %d)..."%fold_id)
-    X_train, X_val = [], []
+    X_train, y_train = [], []
     X_val, y_val = [], []
     # for train and validation
     for df, X, y in [(df_train, X_train, y_train), (df_val, X_val, y_val)]:
