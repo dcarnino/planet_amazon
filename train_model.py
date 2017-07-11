@@ -359,7 +359,7 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
     if verbose >= 1: print("\tFine-tuning Inception V3 first pass (fold %d)..."%fold_id)
     finetune(base_model, model, X_train, y_train, X_val, y_val, batch_size=32, epochs_1=5,
              nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
-             patience_1=2, patience_lr=1, class_imbalance=True,'binary_crossentropy'
+             patience_1=2, patience_lr=1, class_imbalance=True,
              inception_h5_1=model_dir+"inceptionv3_fine_tuned_1_%d.h5"%fold_id,
              inception_h5_check_point_1=model_dir+"inceptionv3_fine_tuned_check_point_1_%d.h5"%fold_id,
              layer_names_file=model_dir+"inceptionv3_mod_layer_names.txt",
