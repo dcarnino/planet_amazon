@@ -355,7 +355,7 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
 
     ### Train model
     if verbose >= 1: print("\tFine-tuning VGG16 first pass (fold %d)..."%fold_id)
-    finetune(base_model, model, X_train, y_train, X_val, y_val, batch_size=32, epochs_1=3,
+    finetune(base_model, model, X_train, y_train, X_val, y_val, batch_size=32, epochs_1=5,
              nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
              patience_1=2, patience_lr=1, class_imbalance=True,
              vgg_h5_1=model_dir+"vgg16_fine_tuned_1_%d.h5"%fold_id,
@@ -369,7 +369,7 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
     finetune_from_saved(model_dir+"vgg16_fine_tuned_check_point_1_%d.h5"%fold_id,
                         model_dir+"vgg16_fine_tuned_2_%d.h5"%fold_id,
                         model_dir+"vgg16_mod_%d.json"%fold_id,
-                        X_train, y_train, X_val, y_val, batch_size=32, epochs=5, optimizer_lr=0.0002,
+                        X_train, y_train, X_val, y_val, batch_size=32, epochs=10, optimizer_lr=0.0002,
                         nb_freeze=11, patience=2, patience_lr=1, class_imbalance=True,
                         nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
                         vgg_h5_check_point=model_dir+"vgg16_fine_tuned_check_point_2_%d.h5"%fold_id,
