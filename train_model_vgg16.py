@@ -19,7 +19,7 @@ from collections import Counter
 from keras.applications.vgg16 import VGG16
 from keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
 from keras.models import Model, model_from_json
-from keras.layers import Dense, GlobalAveragePooling2D
+from keras.layers import Dense, Flatten, Dropout
 from keras import backend as K
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from keras.applications.imagenet_utils import decode_predictions
