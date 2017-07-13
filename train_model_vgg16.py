@@ -93,7 +93,7 @@ def finetune(base_model, model, X_train, y_train, X_val, y_val,
     with open(layer_names_file, "w") as iOF:
         for ix, layer in enumerate(base_model.layers):
             iOF.write("%d, %s\n"%(ix, layer.name))
-            if verbose >= 2: print(ix, layer.name)
+            if verbose >= 4: print(ix, layer.name)
 
     # this is the augmentation configuration we will use for training
     train_datagen = ImageDataGenerator(
