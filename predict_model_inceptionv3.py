@@ -129,7 +129,7 @@ def main(verbose=1):
 
     ### Load images
     if verbose >= 1: print("Loading images into RAM (fold %d)..."%fold_id)
-    image_dir="../data/planet_amazon/train-jpg/
+    image_dir="../data/planet_amazon/train-jpg/"
     target_size = (256,256)
     df_val = pd.read_csv("../data/planet_amazon/val%d.csv"%fold_id)
     X_val, y_val = [], []
