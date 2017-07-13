@@ -64,7 +64,7 @@ def instantiate(n_classes, n_dense=1024, vgg_json="vgg16_mod.json", target_size=
         layer.trainable = False
 
     # compile the model (should be done *after* setting layers to non-trainable)
-    model.compile(optimizer=Adam(lr=0.005), loss=binary_crossentropy_weighted, metrics=[fbs])
+    model.compile(optimizer=Adam(lr=0.0005), loss=binary_crossentropy_weighted, metrics=[fbs])
 
     # serialize model to json
     model_json = model.to_json()
