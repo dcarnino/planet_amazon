@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import sys
 
 def proba_mass_split(y, n_folds=5, shuffle=True, verbose=1):
     y_index = np.array(range(y_train.shape[0]))
@@ -40,6 +41,7 @@ if __name__ == '__main__':
     y_train = df_train.iloc[:,2:].values
 
     # stratified k-fold
+    offset_folds = int(sys.argv[1])
     n_folds = 5
     ix_folds = proba_mass_split(y_train, n_folds=n_folds)
 
@@ -47,5 +49,5 @@ if __name__ == '__main__':
     for fold_id in range(n_folds):
         ix_train = np.array([itm for lst in ix_folds[:fold_id] for itm in lst] + [itm for lst in ix_folds[fold_id+1:] for itm in lst])
         ix_val = np.array(ix_folds[fold_id])
-        df_train.iloc[ix_train,:].to_csv("../data/planet_amazon/train%d.csv"%fold_id, index=False)
-        df_train.iloc[ix_val,:].to_csv("../data/planet_amazon/val%d.csv"%fold_id, index=False)
+        df_train.iloc[ix_train,:].to_csv("../data/planet_amazon/train%d.csv"%(fold_id+offset_folds), index=False)
+        df_train.iloc[ix_val,:].to_csv("../data/planet_amazon/val%d.csv"%(fold_id+offset_folds), index=False)
