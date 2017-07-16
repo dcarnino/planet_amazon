@@ -92,7 +92,7 @@ def finetune(base_model, model, X_train, y_train, X_val, y_val,
 
     # this is the augmentation configuration we will use for training
     train_datagen = ImageDataGenerator(
-        rescale=1./255,
+        featurewise_center=True,
         horizontal_flip=True,
         vertical_flip=True,
         zoom_range=0.15,
@@ -101,9 +101,11 @@ def finetune(base_model, model, X_train, y_train, X_val, y_val,
         rotation_range=180,
         fill_mode='reflect')
 
+    train_datagen.fit(X_train)
+
     # this is the augmentation configuration we will use for testing:
     test_datagen = ImageDataGenerator(
-        rescale=1./255,
+        featurewise_center=True,
         horizontal_flip=True,
         vertical_flip=True,
         zoom_range=0.15,
@@ -111,6 +113,8 @@ def finetune(base_model, model, X_train, y_train, X_val, y_val,
         height_shift_range=0.15,
         rotation_range=180,
         fill_mode='reflect')
+
+    test_datagen.fit(X_train)
 
     # define train & val data generators
     train_generator = train_datagen.flow(
@@ -179,7 +183,7 @@ def finetune_from_saved(resnet_h5_load_from, resnet_h5_save_to,
 
     # this is the augmentation configuration we will use for training
     train_datagen = ImageDataGenerator(
-        rescale=1./255,
+        featurewise_center=True,
         horizontal_flip=True,
         vertical_flip=True,
         zoom_range=0.15,
@@ -188,9 +192,11 @@ def finetune_from_saved(resnet_h5_load_from, resnet_h5_save_to,
         rotation_range=180,
         fill_mode='reflect')
 
+    train_datagen.fit(X_train)
+
     # this is the augmentation configuration we will use for testing:
     test_datagen = ImageDataGenerator(
-        rescale=1./255,
+        featurewise_center=True,
         horizontal_flip=True,
         vertical_flip=True,
         zoom_range=0.15,
@@ -198,6 +204,8 @@ def finetune_from_saved(resnet_h5_load_from, resnet_h5_save_to,
         height_shift_range=0.15,
         rotation_range=180,
         fill_mode='reflect')
+
+    test_datagen.fit(X_train)
 
     # define train & val data generators
     train_generator = train_datagen.flow(
@@ -287,6 +295,15 @@ def binary_crossentropy_weighted(y_true, y_pred, one_weight=4.):
     y_weight = K.clip(y_true * one_weight, 1., one_weight)
     out = K.binary_crossentropy(y_pred, y_true) * y_weight
     return K.mean(out, axis=-1)
+
+
+
+def preprocess_input(x):
+    """
+    Preprocessing step for inception v3.
+    """
+    x -= [103.939, 116.779, 123.68]
+    return x
 
 
 
