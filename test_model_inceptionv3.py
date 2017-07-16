@@ -34,18 +34,20 @@ if __name__ == '__main__':
 
         with open("../data/planet_amazon/inceptionv3_preds%d.npy"%fold_id, "rb") as iOF:
             y_pred_fold = np.load(iOF)
+        with open("../data/planet_amazon/inceptionv3_trues%d.npy"%fold_id, "rb") as iOF:
+            y_true_fold = np.load(iOF)
 
         y_pred_fold = np.mean(y_pred_fold, axis=0)
         y_pred.append(y_pred_fold)
 
-        y_true_fold = df_val.iloc[:,2:].values
+        y_true_fold = np.mean(y_true_fold, axis=0)
         y_true.append(y_true_fold)
 
     y_pred = np.vstack(y_pred)
     y_true = np.vstack(y_true)
 
-    y_pred[y_pred > 0.2] = 1
-    y_pred[y_pred < 0.2] = 0
+    y_pred[y_pred > 0.5] = 1
+    y_pred[y_pred < 0.5] = 0
 
     y_pred = y_pred.astype(int)
 
