@@ -44,8 +44,8 @@ if __name__ == '__main__':
     y_pred = np.vstack(y_pred)
     y_true = np.vstack(y_true)
 
-    y_pred[y_pred > 0.5] = 1.
-    y_pred[y_pred < 0.5] = 0.
+    y_pred[y_pred > 0.2] = 1.
+    y_pred[y_pred < 0.2] = 0.
 
     print(y_pred.shape)
     print(y_true.shape)
