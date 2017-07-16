@@ -174,8 +174,8 @@ def finetune_from_saved(vgg_h5_load_from, vgg_h5_save_to,
 
     # remove dropout
     if not with_dropout:
-        model.layers[21].rate = 0.
-        model.layers[23].rate = 0.
+        loaded_model.layers[21].rate = 0.
+        loaded_model.layers[23].rate = 0.
 
     # we freeze the first nb_freeze layers and unfreeze the rest:
     for layer in loaded_model.layers[:nb_freeze]:
@@ -188,8 +188,8 @@ def finetune_from_saved(vgg_h5_load_from, vgg_h5_save_to,
     loaded_model.compile(optimizer=Adam(lr=optimizer_lr), loss=binary_crossentropy_weighted, metrics=[fbs])
 
     if verbose >= 2:
-        print(model.layers[21].get_config())
-        print(model.layers[23].get_config())
+        print(loaded_model.layers[21].get_config())
+        print(loaded_model.layers[23].get_config())
 
     # this is the augmentation configuration we will use for training
     train_datagen = ImageDataGenerator(
