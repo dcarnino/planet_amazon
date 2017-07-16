@@ -26,7 +26,7 @@ def optimise_f2_thresholds(y, p, resolution=100, verbose=1):
         score = fbeta_score(y, p2, beta=2, average='samples')
         return score
 
-    x = [0.2]*17
+    x = [0.5]*17
     for i in range(17):
         best_i2 = 0
         best_score = 0
