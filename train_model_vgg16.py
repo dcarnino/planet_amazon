@@ -91,7 +91,7 @@ def finetune(base_model, model, X_train, y_train, X_val, y_val,
     # let's visualize layer names and layer indices to see how many layers
     # we should freeze:
     with open(layer_names_file, "w") as iOF:
-        for ix, layer in enumerate(base_model.layers):
+        for ix, layer in enumerate(model.layers):
             iOF.write("%d, %s\n"%(ix, layer.name))
             if verbose >= 4: print(ix, layer.name)
 
@@ -159,7 +159,7 @@ def finetune_from_saved(vgg_h5_load_from, vgg_h5_save_to,
              epochs=5000, patience=2, patience_lr=1, batch_size=32,
              nb_train_samples=85639, nb_validation_samples=10694,
              img_width=299, img_height=299, class_imbalance=False, optimizer_lr=0.0002,
-             vgg_h5_check_point="vgg16_fine_tuned_check_point_2.h5", verbose=1):
+             vgg_h5_check_point="vgg16_fine_tuned_check_point_2.h5", with_dropout=True, verbose=1):
     """
     Finetune the vgg 16 from already fine-tuned one.
     """
@@ -172,6 +172,11 @@ def finetune_from_saved(vgg_h5_load_from, vgg_h5_save_to,
     loaded_model.load_weights(vgg_h5_load_from)
     if verbose >= 1: print("Loaded model from disk")
 
+    # remove dropout
+    if not with_dropout:
+        model.layers[21].rate = 0.
+        model.layers[23].rate = 0.
+
     # we freeze the first nb_freeze layers and unfreeze the rest:
     for layer in loaded_model.layers[:nb_freeze]:
         layer.trainable = False
@@ -181,6 +186,10 @@ def finetune_from_saved(vgg_h5_load_from, vgg_h5_save_to,
     # we need to recompile the model for these modifications to take effect
     # we use SGD with a low learning rate
     loaded_model.compile(optimizer=Adam(lr=optimizer_lr), loss=binary_crossentropy_weighted, metrics=[fbs])
+
+    if verbose >= 2:
+        print(model.layers[21].get_config())
+        print(model.layers[23].get_config())
 
     # this is the augmentation configuration we will use for training
     train_datagen = ImageDataGenerator(
@@ -354,7 +363,7 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
     base_model, model = instantiate(n_classes, n_dense=1024, vgg_json=model_dir+"vgg16_mod_%d.json"%fold_id, verbose=verbose)
 
     ### Train model
-    if verbose >= 1: print("\tFine-tuning VGG16 first pass (fold %d)..."%fold_id)
+    """if verbose >= 1: print("\tFine-tuning VGG16 first pass (fold %d)..."%fold_id)
     finetune(base_model, model, X_train, y_train, X_val, y_val, batch_size=32, epochs_1=5,
              nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
              patience_1=2, patience_lr=1, class_imbalance=True,
@@ -384,6 +393,17 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
                         nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
                         vgg_h5_check_point=model_dir+"vgg16_fine_tuned_check_point_3_%d.h5"%fold_id,
                         verbose=verbose)
+    K.clear_session()"""
+    if verbose >= 1: print("\tFine-tuning VGG16 fourth pass (fold %d)..."%fold_id)
+    finetune_from_saved(model_dir+"vgg16_fine_tuned_check_point_3_%d.h5"%fold_id,
+                        model_dir+"vgg16_fine_tuned_4_%d.h5"%fold_id,
+                        model_dir+"vgg16_mod_%d.json"%fold_id,
+                        X_train, y_train, X_val, y_val, batch_size=32, optimizer_lr=0.00002,
+                        nb_freeze=0, patience=5, patience_lr=1, class_imbalance=True,
+                        nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
+                        vgg_h5_check_point=model_dir+"vgg16_fine_tuned_check_point_4_%d.h5"%fold_id,
+                        with_dropout=False,
+                        verbose=verbose)
     K.clear_session()
 
 
@@ -396,4 +416,4 @@ if __name__ == '__main__':
     fold_id = int(sys.argv[2])
     df_train = pd.read_csv("../data/planet_amazon/train%d.csv"%fold_id)
     df_val = pd.read_csv("../data/planet_amazon/val%d.csv"%fold_id)
-    train_for_a_fold(df_train, df_val, fold_id, verbose=2)
+    train_for_a_fold(df_train.head(100), df_val.head(100), fold_id, verbose=2)
