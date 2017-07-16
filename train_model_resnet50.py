@@ -298,15 +298,6 @@ def binary_crossentropy_weighted(y_true, y_pred, one_weight=4.):
 
 
 
-def preprocess_input(x):
-    """
-    Preprocessing step for inception v3.
-    """
-    x -= [103.939, 116.779, 123.68]
-    return x
-
-
-
 
 def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
                      model_dir="../data/planet_amazon/models/",
@@ -408,4 +399,4 @@ if __name__ == '__main__':
     fold_id = int(sys.argv[2])
     df_train = pd.read_csv("../data/planet_amazon/train%d.csv"%fold_id)
     df_val = pd.read_csv("../data/planet_amazon/val%d.csv"%fold_id)
-    train_for_a_fold(df_train.head(1000), df_val.head(1000), fold_id, verbose=2)
+    train_for_a_fold(df_train, df_val, fold_id, verbose=2)
