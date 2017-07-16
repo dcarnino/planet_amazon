@@ -95,6 +95,7 @@ def infer(model, X_test, y_test, n_inference=100, batch_size=32, verbose=1):
         shuffle=False)
 
     y_pred_list = []
+    y_test_list = []
     for inference_pass in range(n_inference):
 
         y_pred = model.predict_generator(
@@ -104,12 +105,16 @@ def infer(model, X_test, y_test, n_inference=100, batch_size=32, verbose=1):
 
         # get predictions
         y_pred = y_pred[:-nb_add, ...]
-
         y_pred_list.append(y_pred)
 
-    y_pred = np.array(y_pred_list)
+        # append ground truth
+        y_test = y_test_stacked[:-nb_add, ...]
+        y_test_list.append(y_test)
 
-    return y_pred
+    y_pred = np.array(y_pred_list)
+    y_test = np.array(y_test_list)
+
+    return y_pred, y_test
 
 
 
@@ -155,15 +160,20 @@ def main(verbose=1):
 
     ### Infer
     if verbose >= 1: print("Inferring (fold %d)..."%fold_id)
-    y_pred = infer(model, X_val, y_val, n_inference=100, batch_size=32, verbose=verbose)
+    y_pred, y_test = infer(model, X_val, y_val, n_inference=1, batch_size=320, verbose=verbose)
     if verbose >= 2:
         print(y_pred.shape)
+        print(y_test.shape)
         print(y_pred[0,0,0])
+        print(y_test[0,0,0])
+        print("Fbeta score: ", fbeta_score(np.mean(y_test, axis=0), np.mean(y_pred, axis=0).round(), 2, average='samples'))
 
     ### Save preds
     if verbose >= 1: print("Saving preds (fold %d)..."%fold_id)
     with open("../data/planet_amazon/inceptionv3_preds%d.npy"%fold_id, "wb") as iOF:
         np.save(iOF, y_pred)
+    with open("../data/planet_amazon/inceptionv3_trues%d.npy"%fold_id, "wb") as iOF:
+        np.save(iOF, y_test)
 
 
 
