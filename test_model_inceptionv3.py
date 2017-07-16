@@ -44,13 +44,13 @@ if __name__ == '__main__':
     y_pred = np.vstack(y_pred)
     y_true = np.vstack(y_true)
 
-    y_pred[y_pred > 0.04] = 1
-    y_pred[y_pred < 0.04] = 0
+    y_pred[y_pred > 0.8] = 1
+    y_pred[y_pred < 0.8] = 0
 
-    print(y_pred.shape)
     print(y_true.shape)
+    print(y_pred.shape)
 
-    print(y_pred[:3,:])
     print(y_true[:3,:])
+    print(y_pred[:3,:])
 
     print("Fbeta score: ", fbeta_score(y_true, y_pred, 2, average='samples'))
