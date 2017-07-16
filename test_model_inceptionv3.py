@@ -17,7 +17,31 @@ from sklearn.metrics import fbeta_score
 #==============================================
 #                   Functions
 #==============================================
+def optimise_f2_thresholds(y, p, resolution=100, verbose=1):
 
+    def mf(x):
+        p2 = np.zeros_like(p)
+        for i in range(17):
+            p2[:, i] = (p[:, i] > x[i]).astype(np.int)
+        score = fbeta_score(y, p2, beta=2, average='samples')
+        return score
+
+    x = [0.2]*17
+    for i in range(17):
+        best_i2 = 0
+        best_score = 0
+        for i2 in range(resolution):
+            i2 /= resolution
+            x[i] = i2
+            score = mf(x)
+            if score > best_score:
+                best_i2 = i2
+                best_score = score
+        x[i] = best_i2
+        if verbose >= 1:
+            print(i, best_i2, best_score)
+
+    return x
 
 
 
@@ -46,15 +70,16 @@ if __name__ == '__main__':
     y_pred = np.vstack(y_pred)
     y_true = np.vstack(y_true)
 
-    y_pred[y_pred > 0.5] = 1
-    y_pred[y_pred < 0.5] = 0
+    f2_threshs = optimise_f2_thresholds(y_true, y_pred, resolution=100)
 
-    y_pred = y_pred.astype(int)
+    y_pred2 = np.zeros_like(y_pred)
+    for i in range(17):
+        y_pred2[:, i] = (y_pred[:, i] > f2_threshs[i]).astype(np.int)
 
     print(y_true.shape)
-    print(y_pred.shape)
+    print(y_pred2.shape)
 
     print(y_true[:3,:])
-    print(y_pred[:3,:])
+    print(y_pred2[:3,:])
 
-    print("Fbeta score: ", fbeta_score(y_true, y_pred, 2, average='samples'))
+    print("Fbeta score: ", fbeta_score(y_true, y_pred2, 2, average='samples'))
