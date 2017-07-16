@@ -92,7 +92,7 @@ def finetune(base_model, model, X_train, y_train, X_val, y_val,
 
     # this is the augmentation configuration we will use for training
     train_datagen = ImageDataGenerator(
-        preprocessing_function=preprocess_input,
+        rescale=1./255,
         horizontal_flip=True,
         vertical_flip=True,
         zoom_range=0.15,
@@ -103,7 +103,7 @@ def finetune(base_model, model, X_train, y_train, X_val, y_val,
 
     # this is the augmentation configuration we will use for testing:
     test_datagen = ImageDataGenerator(
-        preprocessing_function=preprocess_input,
+        rescale=1./255,
         horizontal_flip=True,
         vertical_flip=True,
         zoom_range=0.15,
@@ -179,7 +179,7 @@ def finetune_from_saved(resnet_h5_load_from, resnet_h5_save_to,
 
     # this is the augmentation configuration we will use for training
     train_datagen = ImageDataGenerator(
-        preprocessing_function=preprocess_input,
+        rescale=1./255,
         horizontal_flip=True,
         vertical_flip=True,
         zoom_range=0.15,
@@ -190,7 +190,7 @@ def finetune_from_saved(resnet_h5_load_from, resnet_h5_save_to,
 
     # this is the augmentation configuration we will use for testing:
     test_datagen = ImageDataGenerator(
-        preprocessing_function=preprocess_input,
+        rescale=1./255,
         horizontal_flip=True,
         vertical_flip=True,
         zoom_range=0.15,
