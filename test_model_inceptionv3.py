@@ -50,4 +50,7 @@ if __name__ == '__main__':
     print(y_pred.shape)
     print(y_true.shape)
 
+    print(y_pred[:3,:])
+    print(y_true[:3,:])
+
     print("Fbeta score: ", fbeta_score(y_true, y_pred, 2, average='samples'))
