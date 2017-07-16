@@ -350,7 +350,7 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
 
     ### Train model
     if verbose >= 1: print("\tFine-tuning ResNet50 first pass (fold %d)..."%fold_id)
-    finetune(base_model, model, X_train, y_train, X_val, y_val, batch_size=32, epochs_1=5,
+    finetune(base_model, model, X_train, y_train, X_val, y_val, batch_size=24, epochs_1=5,
              nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
              patience_1=2, patience_lr=1, class_imbalance=True,
              resnet_h5_1=model_dir+"resnet50_fine_tuned_1_%d.h5"%fold_id,
@@ -364,8 +364,8 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
     finetune_from_saved(model_dir+"resnet50_fine_tuned_check_point_1_%d.h5"%fold_id,
                         model_dir+"resnet50_fine_tuned_2_%d.h5"%fold_id,
                         model_dir+"resnet50_mod_%d.json"%fold_id,
-                        X_train, y_train, X_val, y_val, batch_size=32, epochs=10, optimizer_lr=0.0002,
-                        nb_freeze=11, patience=2, patience_lr=1, class_imbalance=True,
+                        X_train, y_train, X_val, y_val, batch_size=24, epochs=10, optimizer_lr=0.0002,
+                        nb_freeze=80, patience=2, patience_lr=1, class_imbalance=True,
                         nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
                         resnet_h5_check_point=model_dir+"resnet50_fine_tuned_check_point_2_%d.h5"%fold_id,
                         verbose=verbose)
@@ -374,7 +374,7 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(256,256),
     finetune_from_saved(model_dir+"resnet50_fine_tuned_check_point_2_%d.h5"%fold_id,
                         model_dir+"resnet50_fine_tuned_3_%d.h5"%fold_id,
                         model_dir+"resnet50_mod_%d.json"%fold_id,
-                        X_train, y_train, X_val, y_val, batch_size=32, optimizer_lr=0.00002,
+                        X_train, y_train, X_val, y_val, batch_size=24, optimizer_lr=0.00002,
                         nb_freeze=0, patience=10, patience_lr=3, class_imbalance=True,
                         nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
                         resnet_h5_check_point=model_dir+"resnet50_fine_tuned_check_point_3_%d.h5"%fold_id,
@@ -391,4 +391,4 @@ if __name__ == '__main__':
     fold_id = int(sys.argv[2])
     df_train = pd.read_csv("../data/planet_amazon/train%d.csv"%fold_id)
     df_val = pd.read_csv("../data/planet_amazon/val%d.csv"%fold_id)
-    train_for_a_fold(df_train.head(100), df_val.head(100), fold_id, verbose=2)
+    train_for_a_fold(df_train.head(1000), df_val.head(1000), fold_id, verbose=2)
