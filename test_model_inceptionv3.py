@@ -47,6 +47,8 @@ if __name__ == '__main__':
     y_pred[y_pred > 0.2] = 1
     y_pred[y_pred < 0.2] = 0
 
+    y_pred = y_pred.astype(int)
+
     print(y_true.shape)
     print(y_pred.shape)
 
