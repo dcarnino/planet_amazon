@@ -70,8 +70,11 @@ if __name__ == '__main__':
     y_pred = np.vstack(y_pred)
     y_true = np.vstack(y_true)
 
-    #f2_threshs = optimise_f2_thresholds(y_true, y_pred, resolution=100)
-    f2_threshs = [0.5]*17
+    f2_threshs = optimise_f2_thresholds(y_true, y_pred, resolution=100)
+    #f2_threshs = [0.5]*17
+
+    with open("../data/planet_amazon/optimized_thresholds_inceptionv3.txt", "w") as iOF:
+        iOF.writelines([str(thresh) for thresh in f2_threshs])
 
     y_pred2 = np.zeros_like(y_pred)
     for i in range(17):
