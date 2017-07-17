@@ -141,6 +141,8 @@ def main_val():
 
                 y_pred_feat = y_pred[..., ix_feat].T
                 if use_extracted_features:
+                    print(y_pred_feat.shape)
+                    print(extracted_features.shape)
                     y_pred_feat = np.hstack([y_pred_feat, extracted_features])
                 y_true_feat = y_true[..., ix_feat]
 
