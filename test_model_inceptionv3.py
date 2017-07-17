@@ -132,6 +132,9 @@ if __name__ == '__main__':
                 n_folds = 5
                 cv = StratifiedKFold(n_splits=n_folds, shuffle=True)
 
+                print(y_pred_feat.shape)
+                print(y_true_feat.shape)
+
                 for fold_cnt, (train_index, test_index) in enumerate(cv.split(y_pred_feat, y_true_feat)):
 
                     if verbose >= 1: print("XGB feat %d/%d, fold %d/%d..."%(ix_feat+1,17,fold_cnt+1,n_folds))
