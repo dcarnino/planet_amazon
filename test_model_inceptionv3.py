@@ -8,7 +8,7 @@
 #==============================================
 import numpy as np
 import pandas as pd
-from sklearn.metrics import fbeta_score
+from sklearn.metrics import fbeta_score, f1_score
 from sklearn.model_selection import StratifiedKFold
 from scipy.stats import kurtosis, skew
 import gzip
@@ -149,6 +149,7 @@ if __name__ == '__main__':
                     clf.fit(XX_train, yy_train)
 
                     yy_pred = clf.predict_proba(XX_test)
+                    print(f1_score(yy_test, yy_pred, average='micro'))
 
                     y_pred_xgb[test_index, ix_feat] = yy_pred
 
