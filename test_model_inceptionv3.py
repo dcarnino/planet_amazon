@@ -255,9 +255,6 @@ def main_test():
         for i in range(17):
             y_pred2[:, i] = (y_pred_mean[:, i] > f2_threshs[i]).astype(np.int)
 
-        print(y_pred2.shape)
-        print(y_pred2[:3,:])
-
     else:
 
         y_pred_xgb = np.zeros_like(y_pred_mean)
@@ -268,74 +265,36 @@ def main_test():
 
             y_pred_feat = y_pred[..., ix_feat].T
 
-            with gzip.open("../data/planet_amazon/models/xgb_class%d.gzip", "wb") as iOF:
-                pickle.dump(clf, iOF)
+            with gzip.open("../data/planet_amazon/models/xgb_class%d.gzip"%ix_feat, "rb") as iOF:
+                clf = pickle.load(iOF)
+
+            yy_pred = clf.predict_proba(y_pred_feat)
+            y_pred_xgb[:, ix_feat] = yy_pred
+
+        with open("../data/planet_amazon/optimized_thresholds_xgb.txt", "r") as iOF:
+            f2_threshs = iOF.readlines()
+        f2_threshs = [float(thresh[:-1]) for thresh in f2_threshs]
+
+        y_pred2 = np.zeros_like(y_pred_xgb)
+        for i in range(17):
+            y_pred2[:, i] = (y_pred_xgb[:, i] > f2_threshs[i]).astype(np.int)
 
 
-            if cross_validate:
+    print(len(test_ids))
+    print(y_pred2.shape)
+    print(y_pred2[:3,:])
 
-                y_pred_feat = y_pred[..., ix_feat].T
-                y_true_feat = y_true[..., ix_feat]
+    labels = np.array(['agriculture', 'artisinal_mine', 'bare_ground', 'blooming',\
+              'blow_down', 'clear', 'cloudy', 'conventional_mine', 'cultivation',\
+              'habitation', 'haze', 'partly_cloudy', 'primary', 'road',\
+              'selective_logging', 'slash_burn', 'water'])
 
-                n_folds = 5
-                cv = StratifiedKFold(n_splits=n_folds, shuffle=True)
+    pred_labels = [" ".join(labels[np.where(yp > 0.5)]) for yp in y_pred2]
 
-                for fold_cnt, (train_index, test_index) in enumerate(cv.split(y_pred_feat, y_true_feat)):
-
-                    print("XGB feat %d/%d, fold %d/%d..."%(ix_feat+1,17,fold_cnt+1,n_folds))
-
-                    XX_train, XX_test = y_pred_feat[train_index], y_pred_feat[test_index]
-                    yy_train, yy_test = y_true_feat[train_index], y_true_feat[test_index]
-
-                    clf = XGBClassifier_ensembling(n_folds=20, early_stopping_rounds=10,
-                                                   max_depth=5, learning_rate=0.02,
-                                                   objective='binary:logistic', nthread=28,
-                                                   min_child_weight=4, subsample=0.7)
-
-                    clf.fit(XX_train, yy_train)
-
-                    yy_pred = clf.predict_proba(XX_test)
-                    print(f1_score(yy_test, np.round(yy_pred), average='micro'))
-
-                    y_pred_xgb[test_index, ix_feat] = yy_pred
-
-            else:
-
-                print("XGB feat %d/%d..."%(ix_feat+1,17))
-
-                y_pred_feat = y_pred[..., ix_feat].T
-                y_true_feat = y_true[..., ix_feat]
-
-                clf = XGBClassifier_ensembling(n_folds=20, early_stopping_rounds=10,
-                                               max_depth=5, learning_rate=0.02,
-                                               objective='binary:logistic', nthread=28,
-                                               min_child_weight=4, subsample=0.7)
-
-                clf.fit(y_pred_feat, y_true_feat)
-
-                with gzip.open("../data/planet_amazon/models/xgb_class%d.gzip"%ix_feat, "wb") as iOF:
-                    pickle.dump(clf, iOF)
+    df = pd.DataFrame([np.array(test_ids).reshape((-1,1)), np.array(pred_labels).reshape((-1,1))], columns=["image_name", "tags"])
+    df.to_csv("../data/planet_amazon/submission_file_001.csv", index=False)
 
 
-        if cross_validate:
-
-            f2_threshs = optimise_f2_thresholds(y_true, y_pred_xgb, bmin=0.4, bmax=0.51, resolution=100)
-            #f2_threshs = [0.5]*17
-
-            with open("../data/planet_amazon/optimized_thresholds_xgb.txt", "w") as iOF:
-                iOF.writelines([str(thresh)+"\n" for thresh in f2_threshs])
-
-            y_pred2 = np.zeros_like(y_pred_xgb)
-            for i in range(17):
-                y_pred2[:, i] = (y_pred_xgb[:, i] > f2_threshs[i]).astype(np.int)
-
-            print(y_true.shape)
-            print(y_pred2.shape)
-
-            print(y_true[:3,:])
-            print(y_pred2[:3,:])
-
-            print("Fbeta score: ", fbeta_score(y_true, y_pred2, 2, average='samples'))
 
 
 
@@ -344,4 +303,4 @@ def main_test():
 #                   Main
 #==============================================
 if __name__ == '__main__':
-    main_val()
+    main_test()
