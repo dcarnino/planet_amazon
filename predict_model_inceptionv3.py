@@ -120,57 +120,121 @@ def main(verbose=1):
     Main function.
     """
 
-    fold_id = int(sys.argv[2])
+    if sys.argv[2] != 'test':
 
-    ### Load model
-    if verbose >= 1: print("Loading model (fold %d)..."%fold_id)
-    model_dir = "../data/planet_amazon/models/"
-    model = load_model(inception_json=model_dir+"inceptionv3_mod_%d.json"%fold_id,
-                       inception_h5=model_dir+"inceptionv3_fine_tuned_check_point_2_%d.h5"%fold_id,
-                       verbose=verbose)
+        ##### Validation
+        fold_id = int(sys.argv[2])
 
-    ### Load images
-    if verbose >= 1: print("Loading images into RAM (fold %d)..."%fold_id)
-    image_dir="../data/planet_amazon/train-jpg/"
-    target_size = (256,256)
-    df_val = pd.read_csv("../data/planet_amazon/val%d.csv"%fold_id)
-    X_val, y_val = [], []
-    # for train and validation
-    for image_id, y_lab in tqdm(list(zip(df_val.image_name, df_val.iloc[:,2:].values)), miniters=100):
-        image_path = image_dir+str(image_id)+".jpg"
-        if os.path.exists(image_path):
-            try:
-                img = load_img(image_path, target_size=target_size)
-                arr = img_to_array(img)
-                X_val.append(arr)
-                y_val.append(y_lab)
-            except OSError:
-                if verbose >= 2: print("OSError on image %s."%image_path)
-        else:
-            raise(ValueError("Image %s does not exist."%image_path))
-    X_val = np.array(X_val)
-    y_val = np.array(y_val)
-    if verbose >= 2:
-        print(X_val.shape)
-        print(y_val.shape)
-        print(np.mean(y_val, axis=0))
+        ### Load model
+        if verbose >= 1: print("Loading model (fold %d)..."%fold_id)
+        model_dir = "../data/planet_amazon/models/"
+        model = load_model(inception_json=model_dir+"inceptionv3_mod_%d.json"%fold_id,
+                           inception_h5=model_dir+"inceptionv3_fine_tuned_check_point_2_%d.h5"%fold_id,
+                           verbose=verbose)
 
-    ### Infer
-    if verbose >= 1: print("Inferring (fold %d)..."%fold_id)
-    y_pred, y_test = infer(model, X_val, y_val, n_inference=10, batch_size=32, verbose=verbose)
-    if verbose >= 2:
-        print(y_pred.shape)
-        print(y_test.shape)
-        print(y_pred[0,0,0])
-        print(y_test[0,0,0])
-        print("Fbeta score: ", fbeta_score(np.mean(y_test, axis=0), np.mean(y_pred, axis=0).round(), 2, average='samples'))
+        ### Load images
+        if verbose >= 1: print("Loading images into RAM (fold %d)..."%fold_id)
+        image_dir="../data/planet_amazon/train-jpg/"
+        target_size = (256,256)
+        df_val = pd.read_csv("../data/planet_amazon/val%d.csv"%fold_id)
+        X_val, y_val = [], []
+        # for train and validation
+        for image_id, y_lab in tqdm(list(zip(df_val.image_name, df_val.iloc[:,2:].values)), miniters=100):
+            image_path = image_dir+str(image_id)+".jpg"
+            if os.path.exists(image_path):
+                try:
+                    img = load_img(image_path, target_size=target_size)
+                    arr = img_to_array(img)
+                    X_val.append(arr)
+                    y_val.append(y_lab)
+                except OSError:
+                    if verbose >= 2: print("OSError on image %s."%image_path)
+            else:
+                raise(ValueError("Image %s does not exist."%image_path))
+        X_val = np.array(X_val)
+        y_val = np.array(y_val)
+        if verbose >= 2:
+            print(X_val.shape)
+            print(y_val.shape)
+            print(np.mean(y_val, axis=0))
 
-    ### Save preds
-    if verbose >= 1: print("Saving preds (fold %d)..."%fold_id)
-    with open("../data/planet_amazon/inceptionv3_preds%d.npy"%fold_id, "wb") as iOF:
-        np.save(iOF, y_pred)
-    with open("../data/planet_amazon/inceptionv3_trues%d.npy"%fold_id, "wb") as iOF:
-        np.save(iOF, y_test)
+        ### Infer
+        if verbose >= 1: print("Inferring (fold %d)..."%fold_id)
+        y_pred, y_test = infer(model, X_val, y_val, n_inference=10, batch_size=32, verbose=verbose)
+        if verbose >= 2:
+            print(y_pred.shape)
+            print(y_test.shape)
+            print(y_pred[0,0,0])
+            print(y_test[0,0,0])
+            print("Fbeta score: ", fbeta_score(np.mean(y_test, axis=0), np.mean(y_pred, axis=0).round(), 2, average='samples'))
+
+        ### Save preds
+        if verbose >= 1: print("Saving preds (fold %d)..."%fold_id)
+        with open("../data/planet_amazon/inceptionv3_preds%d.npy"%fold_id, "wb") as iOF:
+            np.save(iOF, y_pred)
+        with open("../data/planet_amazon/inceptionv3_trues%d.npy"%fold_id, "wb") as iOF:
+            np.save(iOF, y_test)
+
+    else:
+
+        ### Load images
+        if verbose >= 1: print("Loading images into RAM...")
+        image_dir="../data/planet_amazon/test-jpg/"
+        target_size = (256,256)
+        image_ids = [fname[:-4] for fname in os.listdir(image_dir) if fname.endswith(".jpg")]
+        X_test, y_test = [], []
+        # for train and validation
+        for image_id in tqdm(image_ids, miniters=100):
+            image_path = image_dir+str(image_id)+".jpg"
+            if os.path.exists(image_path):
+                try:
+                    img = load_img(image_path, target_size=target_size)
+                    arr = img_to_array(img)
+                    X_test.append(arr)
+                    y_lab = np.zeros((17,))
+                    y_test.append(y_lab)
+                except OSError:
+                    if verbose >= 2: print("OSError on image %s."%image_path)
+            else:
+                raise(ValueError("Image %s does not exist."%image_path))
+        X_test = np.array(X_test)
+        y_test = np.array(y_test)
+        if verbose >= 2:
+            print(X_test.shape)
+            print(y_test.shape)
+            print(np.mean(y_test, axis=0))
+
+        ##### Test
+        y_pred_folds = []
+        offset = 0
+        for fold_id in range(offset,offset+5):
+            ### Load model
+            if verbose >= 1: print("Loading model (fold %d)..."%fold_id)
+            model_dir = "../data/planet_amazon/models/"
+            model = load_model(inception_json=model_dir+"inceptionv3_mod_%d.json"%fold_id,
+                               inception_h5=model_dir+"inceptionv3_fine_tuned_check_point_2_%d.h5"%fold_id,
+                               verbose=verbose)
+
+            ### Infer
+            if verbose >= 1: print("Inferring (fold %d)..."%fold_id)
+            y_pred, _ = infer(model, X_test, y_test, n_inference=2, batch_size=32, verbose=verbose)
+            y_pred_folds.append(y_pred)
+            if verbose >= 2:
+                print(y_pred.shape)
+                print(y_pred[0,0,0])
+
+        y_pred_folds = np.vstack(y_pred_folds)
+        if verbose >= 2:
+            print(y_pred_folds.shape)
+            print(y_pred_folds[0,0,0])
+
+        ### Save preds
+        if verbose >= 1: print("Saving preds...")
+        with open("../data/planet_amazon/inceptionv3_predstest.npy", "wb") as iOF:
+            np.save(iOF, y_pred_folds)
+        with open("../data/planet_amazon/inceptionv3_idstest.txt", "w") as iOF:
+            iOF.writelines(image_ids)
+
 
 
 
