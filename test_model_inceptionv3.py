@@ -159,6 +159,8 @@ def main_val():
 
             else:
 
+                print("XGB feat %d/%d..."%(ix_feat+1,17))
+
                 y_pred_feat = y_pred[..., ix_feat].T
                 y_true_feat = y_true[..., ix_feat]
 

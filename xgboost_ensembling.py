@@ -97,13 +97,16 @@ class XGBRegressor_ensembling(BaseEstimator, RegressorMixin):
 
 
 
+def lambda_f1_score(y_true, y_pred):
+    return metrics.f1_score(y_true, y_pred, average='micro')
+
 
 
 class XGBClassifier_ensembling(BaseEstimator, ClassifierMixin):
 
 
     def __init__(self, n_folds=5, early_stopping_rounds=10,
-                 eval_metric=(lambda y_true, y_pred: metrics.f1_score(y_true, y_pred, average='micro')), greater_is_better=True,
+                 eval_metric=lambda_f1_score, greater_is_better=True,
                  max_depth=3, learning_rate=0.1, n_estimators=100000, silent=True,
                  objective='multi:softmax', nthread=None,
                  gamma=0, min_child_weight=1, max_delta_step=0, subsample=1,
@@ -176,9 +179,13 @@ class XGBClassifier_ensembling(BaseEstimator, ClassifierMixin):
                 X_test = X_test[~new_mask]
                 y_test = y_test[~new_mask]
 
+            def lambda_eval_metric(y_pred, dtest):
+                return self.custom_eval(y_pred, dtest)
+
             self.estimator_list_[fold_cnt].fit(X_train, y_train,
-                                              eval_set=[(X_test, y_test)], eval_metric=(lambda y_pred, dtest: self.custom_eval(y_pred, dtest)),
+                                              eval_set=[(X_test, y_test)], eval_metric=lambda_eval_metric,
                                               early_stopping_rounds=self.early_stopping_rounds, verbose=verbose)
+
 
 
     def predict(self, X):
