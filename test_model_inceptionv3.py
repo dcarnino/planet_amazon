@@ -291,7 +291,11 @@ def main_test():
 
     pred_labels = [" ".join(labels[np.where(yp > 0.5)]) for yp in y_pred2]
 
-    df = pd.DataFrame([np.array(test_ids).reshape((-1,1)), np.array(pred_labels).reshape((-1,1))], columns=["image_name", "tags"])
+    test_ids = np.array(test_ids).reshape((-1,1))
+    pred_labels = np.array(pred_labels).reshape((-1,1))
+    print(test_ids.shape)
+    print(pred_labels.shape)
+    df = pd.DataFrame([test_ids, pred_labels], columns=["image_name", "tags"])
     df.to_csv("../data/planet_amazon/submission_file_001.csv", index=False)
 
 
