@@ -87,6 +87,8 @@ train['path'] = train['image_name'].map(lambda x: in_path + 'train-jpg/' + x + '
 train_id = np.array([p.split('/')[3].replace('.jpg','') for p in train['path']])
 y = train['tags'].str.get_dummies(sep=' ')
 xtrain = normalize_img(train['path']); print('train...')
+print(xtrain.shape)
+print(train_id.shape)
 pd.DataFrame(np.hstack([train_id.T, xtrain])).to_csv("../data/planet_amazon/train_features.csv", index=False)
 
 test_jpg = glob.glob(in_path + 'test-jpg-v2/*')[:100]
