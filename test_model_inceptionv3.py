@@ -95,7 +95,7 @@ if __name__ == '__main__':
     y_pred_skew = np.vstack(y_pred_skew)
     y_pred_kurtosis = np.vstack(y_pred_kurtosis)
 
-    y_pred = np.array(y_pred_mean, y_pred_median, y_pred_std, y_pred_min, y_pred_max, y_pred_skew, y_pred_kurtosis)
+    y_pred = np.array([y_pred_mean, y_pred_median, y_pred_std, y_pred_min, y_pred_max, y_pred_skew, y_pred_kurtosis])
     y_true = np.vstack(y_true)
 
     if mean_only:
