@@ -36,7 +36,7 @@ def get_features(path):
         st += list(cv2.calcHist([img],[0],None,[256],[0,256]).flatten()) #r
         st += list(cv2.calcHist([img],[1],None,[256],[0,256]).flatten()) #g
         st += list(cv2.calcHist([img],[2],None,[256],[0,256]).flatten()) #b
-        try:
+        """try:
             #skimage tif
             p1 = path.replace('jpg','tif')
             p1 = p1.replace('train-tif','train-tif-v2') #Why make path changes so complex that they nullify old scripts
@@ -56,7 +56,7 @@ def get_features(path):
             p1 = path.replace('jpg','tif')
             p1 = p1.replace('train-tif','train-tif-v2') #Why make path changes so complex that they nullify old scripts
             p1 = p1.replace('test-tif-v2','test-tif-v3') #Why make path changes so complex that they nullify old scripts
-            print('err', p1)
+            print('err', p1)"""
         m, s = cv2.meanStdDev(img) #mean and standard deviation
         st += list(m)
         st += list(s)
@@ -88,8 +88,6 @@ train['path'] = train['image_name'].map(lambda x: in_path + 'train-jpg/' + x + '
 train_id = np.array([p.split('/')[3].replace('.jpg','') for p in train['path']])
 y = train['tags'].str.get_dummies(sep=' ')
 xtrain = normalize_img(train['path']); print('train...')
-print(np.array(xtrain).shape)
-print(train_id.shape)
 pd.DataFrame(np.hstack([train_id.reshape((-1,1)), xtrain])).to_csv("../data/planet_amazon/train_features.csv", index=False)
 
 test_jpg = glob.glob(in_path + 'test-jpg-v2/*')[:100]
