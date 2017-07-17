@@ -75,7 +75,9 @@ if __name__ == '__main__':
         y_pred_fold_min = np.min(y_pred_fold, axis=0)
         y_pred_fold_max = np.max(y_pred_fold, axis=0)
         y_pred_fold_skew = skew(y_pred_fold, axis=0, nan_policy='omit')
+        y_pred_fold_skew[~np.isfinite(y_pred_fold_skew)] = 0.
         y_pred_fold_kurtosis = kurtosis(y_pred_fold, axis=0, nan_policy='omit')
+        y_pred_fold_kurtosis[~np.isfinite(y_pred_fold_kurtosis)] = 0.
         y_pred_mean.append(y_pred_fold_mean)
         y_pred_median.append(y_pred_fold_median)
         y_pred_std.append(y_pred_fold_std)
