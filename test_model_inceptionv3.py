@@ -67,10 +67,7 @@ def main_val():
         df_val = pd.read_csv("../data/planet_amazon/val%d.csv"%fold_id)
         if use_extracted_features:
             df_val = df_val.merge(df_feat, how='left', on="image_name")
-            print(df_val.columns[19:])
             extracted_features = df_val.iloc[:,19:].values
-            print(extracted_features.shape)
-            raise(ValueError)
 
         with open("../data/planet_amazon/inceptionv3_preds%d.npy"%fold_id, "rb") as iOF:
             y_pred_fold = np.load(iOF)
@@ -143,6 +140,8 @@ def main_val():
             if cross_validate:
 
                 y_pred_feat = y_pred[..., ix_feat].T
+                if use_extracted_features:
+                    y_pred_feat = np.hstack([y_pred_feat, extracted_features])
                 y_true_feat = y_true[..., ix_feat]
 
                 n_folds = 5
@@ -172,6 +171,8 @@ def main_val():
                 print("XGB feat %d/%d..."%(ix_feat+1,17))
 
                 y_pred_feat = y_pred[..., ix_feat].T
+                if use_extracted_features:
+                    y_pred_feat = np.hstack([y_pred_feat, extracted_features])
                 y_true_feat = y_true[..., ix_feat]
 
                 clf = XGBClassifier_ensembling(n_folds=20, early_stopping_rounds=10,
