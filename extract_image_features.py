@@ -94,4 +94,4 @@ test_jpg = glob.glob(in_path + 'test-jpg/*')[:100]
 test = pd.DataFrame([[p.split('/')[3].replace('.jpg',''),p] for p in test_jpg])
 test.columns = ['image_name','path']
 xtest = normalize_img(test['path']); print('test...')
-pd.DataFrame(np.hstack([test['image_name'], xtest])).to_csv("../data/planet_amazon/test_features.csv", index=False)
+pd.DataFrame(np.hstack([test['image_name'].values.reshape((-1,1)), xtest])).to_csv("../data/planet_amazon/test_features.csv", index=False)
