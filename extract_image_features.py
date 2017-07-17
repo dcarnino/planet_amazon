@@ -88,7 +88,7 @@ train = pd.read_csv(in_path + 'train_v2.csv')[:100]
 train['path'] = train['image_name'].map(lambda x: in_path + 'train-jpg/' + x + '.jpg')
 train_id = np.array([p.split('/')[-1].replace('.jpg','') for p in train['path']])
 y = train['tags'].str.get_dummies(sep=' ')
-xtrain = np.array(normalize_img(train['path']); print('train...'))
+xtrain = np.array(normalize_img(train['path'])); print('train...')
 vt = VarianceThreshold()
 vt.fit(xtrain)
 xtrain = vt.transform(xtrain)
@@ -98,7 +98,7 @@ pd.DataFrame(np.hstack([train_id.reshape((-1,1)), xtrain])).to_csv("../data/plan
 test_jpg = glob.glob(in_path + 'test-jpg/*')[:100]
 test = pd.DataFrame([[p.split('/')[-1].replace('.jpg',''),p] for p in test_jpg])
 test.columns = ['image_name','path']
-xtest = np.array(normalize_img(test['path']); print('test...'))
+xtest = np.array(normalize_img(test['path'])); print('test...')
 xtest = vt.transform(xtest)
 print(xtest.shape)
 pd.DataFrame(np.hstack([test['image_name'].values.reshape((-1,1)), xtest])).to_csv("../data/planet_amazon/test_features.csv", index=False)
