@@ -21,7 +21,7 @@ from xgboost_ensembling import XGBClassifier_ensembling
 #==============================================
 #                   Functions
 #==============================================
-def optimise_f2_thresholds(y, p, resolution=100, verbose=1):
+def optimise_f2_thresholds(y, p, resolution=100, bmin=0, bmax=100, verbose=1):
 
     def mf(x):
         p2 = np.zeros_like(p)
@@ -34,8 +34,8 @@ def optimise_f2_thresholds(y, p, resolution=100, verbose=1):
     for i in range(17):
         best_i2 = 0
         best_score = 0
-        for i2 in range(resolution):
-            i2 /= resolution
+        for i2 in range(bmin, bmax):
+            i2 /= float(resolution)
             x[i] = i2
             score = mf(x)
             if score > best_score:
@@ -141,7 +141,7 @@ if __name__ == '__main__':
                     XX_train, XX_test = y_pred_feat[train_index], y_pred_feat[test_index]
                     yy_train, yy_test = y_true_feat[train_index], y_true_feat[test_index]
 
-                    clf = XGBClassifier_ensembling(n_folds=5, early_stopping_rounds=10,
+                    clf = XGBClassifier_ensembling(n_folds=20, early_stopping_rounds=10,
                                                    max_depth=5, learning_rate=0.02,
                                                    objective='binary:logistic', nthread=28,
                                                    min_child_weight=4, subsample=0.7)
@@ -171,7 +171,7 @@ if __name__ == '__main__':
 
         if cross_validate:
 
-            f2_threshs = optimise_f2_thresholds(y_true, y_pred_xgb, resolution=100)
+            f2_threshs = optimise_f2_thresholds(y_true, y_pred_xgb, bmin=40, bmax=51, resolution=100)
             #f2_threshs = [0.5]*17
 
             with open("../data/planet_amazon/optimized_thresholds_xgb.txt", "w") as iOF:
