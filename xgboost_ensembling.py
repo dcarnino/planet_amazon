@@ -141,7 +141,7 @@ class XGBClassifier_ensembling(BaseEstimator, ClassifierMixin):
             score = self.eval_metric(y_test, np.round(y_pred))
         else:
             score = self.eval_metric(y_test, np.argmax(y_pred, axis=1))
-        if self.greater_is_better:
+        if not self.greater_is_better:
             score = -score
         return 'custom_metric', score
 
