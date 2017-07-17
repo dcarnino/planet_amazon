@@ -69,7 +69,7 @@ def main_val():
         print(df_val.columns)
         print(df_val.shape)
         raise(ValueError)
-        extracted_features = df_val.iloc[]
+        #extracted_features = df_val.iloc[]
 
         with open("../data/planet_amazon/inceptionv3_preds%d.npy"%fold_id, "rb") as iOF:
             y_pred_fold = np.load(iOF)
