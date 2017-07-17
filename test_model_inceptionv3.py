@@ -142,9 +142,9 @@ if __name__ == '__main__':
                     yy_train, yy_test = y_true_feat[train_index], y_true_feat[test_index]
 
                     clf = XGBClassifier_ensembling(n_folds=5, early_stopping_rounds=10,
-                                                   max_depth=5, learning_rate=0.02,
+                                                   max_depth=10, learning_rate=0.02,
                                                    objective='binary:logistic', nthread=28,
-                                                   min_child_weight=4, subsample=0.7)
+                                                   min_child_weight=4, subsample=0.8)
 
                     clf.fit(XX_train, yy_train)
 
