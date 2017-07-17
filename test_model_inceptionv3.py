@@ -9,9 +9,13 @@
 import numpy as np
 import pandas as pd
 from sklearn.metrics import fbeta_score
+from sklearn.model_selection import StratifiedKFold
+from scipy.stats import kurtosis, skew
+import gzip
 #==============================================
 #                   Files
 #==============================================
+from xgboost_ensembling import XGBClassifier_ensembling
 
 
 #==============================================
@@ -50,7 +54,11 @@ def optimise_f2_thresholds(y, p, resolution=100, verbose=1):
 #==============================================
 if __name__ == '__main__':
 
-    y_pred, y_true = [], []
+    mean_only = False
+    cross_validate = True
+
+    y_true = []
+    y_pred_mean, y_pred_median, y_pred_std, y_pred_min, y_pred_max, y_pred_skew, y_pred_kurtosis = [], [], [], [], [], [], []
 
     for fold_id in range(5):
 
@@ -61,29 +69,116 @@ if __name__ == '__main__':
         with open("../data/planet_amazon/inceptionv3_trues%d.npy"%fold_id, "rb") as iOF:
             y_true_fold = np.load(iOF)
 
-        y_pred_fold = np.mean(y_pred_fold, axis=0)
-        y_pred.append(y_pred_fold)
+        y_pred_fold_mean = np.mean(y_pred_fold, axis=0)
+        y_pred_fold_median = np.median(y_pred_fold, axis=0)
+        y_pred_fold_std = np.std(y_pred_fold, axis=0)
+        y_pred_fold_min = np.min(y_pred_fold, axis=0)
+        y_pred_fold_max = np.max(y_pred_fold, axis=0)
+        y_pred_fold_skew = skew(y_pred_fold, axis=0)
+        y_pred_fold_kurtosis = kurtosis(y_pred_fold, axis=0)
+        y_pred_mean.append(y_pred_fold_mean)
+        y_pred_median.append(y_pred_fold_median)
+        y_pred_std.append(y_pred_fold_std)
+        y_pred_min.append(y_pred_fold_min)
+        y_pred_max.append(y_pred_fold_max)
+        y_pred_skew.append(y_pred_fold_skew)
+        y_pred_kurtosis.append(y_pred_fold_kurtosis)
 
         y_true_fold = np.mean(y_true_fold, axis=0)
         y_true.append(y_true_fold)
 
-    y_pred = np.vstack(y_pred)
+    y_pred_mean = np.vstack(y_pred_mean)
+    y_pred_median = np.vstack(y_pred_median)
+    y_pred_std = np.vstack(y_pred_std)
+    y_pred_min = np.vstack(y_pred_min)
+    y_pred_max = np.vstack(y_pred_max)
+    y_pred_skew = np.vstack(y_pred_skew)
+    y_pred_kurtosis = np.vstack(y_pred_kurtosis)
+
+    y_pred = np.array(y_pred_mean, y_pred_median, y_pred_std, y_pred_min, y_pred_max, y_pred_skew, y_pred_kurtosis)
     y_true = np.vstack(y_true)
 
-    f2_threshs = optimise_f2_thresholds(y_true, y_pred, resolution=100)
-    #f2_threshs = [0.5]*17
+    if mean_only:
 
-    with open("../data/planet_amazon/optimized_thresholds_inceptionv3.txt", "w") as iOF:
-        iOF.writelines([str(thresh) for thresh in f2_threshs])
+        f2_threshs = optimise_f2_thresholds(y_true, y_pred_mean, resolution=100)
+        #f2_threshs = [0.5]*17
 
-    y_pred2 = np.zeros_like(y_pred)
-    for i in range(17):
-        y_pred2[:, i] = (y_pred[:, i] > f2_threshs[i]).astype(np.int)
+        with open("../data/planet_amazon/optimized_thresholds_inceptionv3.txt", "w") as iOF:
+            iOF.writelines([str(thresh)+"\n" for thresh in f2_threshs])
 
-    print(y_true.shape)
-    print(y_pred2.shape)
+        y_pred2 = np.zeros_like(y_pred_mean)
+        for i in range(17):
+            y_pred2[:, i] = (y_pred_mean[:, i] > f2_threshs[i]).astype(np.int)
 
-    print(y_true[:3,:])
-    print(y_pred2[:3,:])
+        print(y_true.shape)
+        print(y_pred2.shape)
 
-    print("Fbeta score: ", fbeta_score(y_true, y_pred2, 2, average='samples'))
+        print(y_true[:3,:])
+        print(y_pred2[:3,:])
+
+        print("Fbeta score: ", fbeta_score(y_true, y_pred2, 2, average='samples'))
+
+    else:
+
+        y_pred_xgb = np.zeros_like(y_true)
+
+        for ix_feat in range(17):
+
+            if cross_validate:
+
+                y_pred_feat = y_pred[..., ix_feat]
+                y_true_feat = y_true[..., ix_feat]
+
+                n_folds = 5
+                cv = StratifiedKFold(n_splits=n_folds, shuffle=True)
+
+                for fold_cnt, (train_index, test_index) in enumerate(cv.split(y_pred_feat, y_true_feat)):
+
+                    if verbose >= 1: print("XGB feat %d/%d, fold %d/%d..."%(ix_feat+1,17,fold_cnt+1,n_folds))
+
+                    XX_train, XX_test = y_pred_feat[train_index], y_pred_feat[test_index]
+                    yy_train, yy_test = y_true_feat[train_index], y_true_feat[test_index]
+
+                    clf = XGBClassifier_ensembling(n_folds=20, early_stopping_rounds=10,
+                                                   max_depth=5, learning_rate=0.02,
+                                                   objective='binary:logistic', nthread=28,
+                                                   min_child_weight=4, subsample=0.7)
+
+                    clf.fit(XX_train, yy_train)
+
+                    yy_pred = clf.predict_proba(XX_test)
+
+                    y_pred_xgb[test_index, ix_feat] = yy_pred
+
+                #f2_threshs = optimise_f2_thresholds(y_true, y_pred_xgb, resolution=100)
+                f2_threshs = [0.2]*17
+
+                with open("../data/planet_amazon/optimized_thresholds_xgb.txt", "w") as iOF:
+                    iOF.writelines([str(thresh)+"\n" for thresh in f2_threshs])
+
+                y_pred2 = np.zeros_like(y_pred_xgb)
+                for i in range(17):
+                    y_pred2[:, i] = (y_pred_xgb[:, i] > f2_threshs[i]).astype(np.int)
+
+                print(y_true.shape)
+                print(y_pred2.shape)
+
+                print(y_true[:3,:])
+                print(y_pred2[:3,:])
+
+                print("Fbeta score: ", fbeta_score(y_true, y_pred2, 2, average='samples'))
+
+            else:
+
+                y_pred_feat = y_pred[..., ix_feat]
+                y_true_feat = y_true[..., ix_feat]
+
+                clf = XGBClassifier_ensembling(n_folds=20, early_stopping_rounds=10,
+                                               max_depth=5, learning_rate=0.02,
+                                               objective='binary:logistic', nthread=28,
+                                               min_child_weight=4, subsample=0.7)
+
+                clf.fit(y_pred_feat, y_true_feat)
+
+                with gzip.open("../data/planet_amazon/models/xgb_class%d.gzip", "wb") as iOF:
+                    iOF.dump(clf)
