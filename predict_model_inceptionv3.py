@@ -65,18 +65,6 @@ def infer(model, X_test, y_test, n_inference=100, batch_size=32, verbose=1):
     Infer with the inception v3.
     """
 
-    # this is the augmentation configuration we will use for testing:
-    # only rescaling
-    test_datagen = ImageDataGenerator(
-        preprocessing_function=preprocess_input,
-        horizontal_flip=True,
-        vertical_flip=True,
-        zoom_range=0.15,
-        width_shift_range=0.15,
-        height_shift_range=0.15,
-        rotation_range=180,
-        fill_mode='reflect')
-
     # number of samples
     nb_test_samples = len(y_test)
 
@@ -87,16 +75,25 @@ def infer(model, X_test, y_test, n_inference=100, batch_size=32, verbose=1):
     y_test_stacked = np.vstack([y_test, y_test_add])
     X_test_stacked = np.vstack([X_test, X_test_add])
 
-    # define test data generators
-    test_generator = test_datagen.flow(
-        X_test_stacked,
-        y_test_stacked,
-        batch_size=batch_size,
-        shuffle=False)
-
     y_pred_list = []
     y_test_list = []
     for inference_pass in range(n_inference):
+
+        test_datagen = ImageDataGenerator(
+            preprocessing_function=preprocess_input,
+            horizontal_flip=True,
+            vertical_flip=True,
+            zoom_range=0.15,
+            width_shift_range=0.15,
+            height_shift_range=0.15,
+            rotation_range=180,
+            fill_mode='reflect')
+
+        test_generator = test_datagen.flow(
+            X_test_stacked,
+            y_test_stacked,
+            batch_size=batch_size,
+            shuffle=False)
 
         y_pred = model.predict_generator(
             test_generator,
@@ -136,7 +133,7 @@ def main(verbose=1):
     if verbose >= 1: print("Loading images into RAM (fold %d)..."%fold_id)
     image_dir="../data/planet_amazon/train-jpg/"
     target_size = (256,256)
-    df_val = pd.read_csv("../data/planet_amazon/val%d.csv"%fold_id)
+    df_val = pd.read_csv("../data/planet_amazon/val%d.csv"%fold_id).head(128)
     X_val, y_val = [], []
     # for train and validation
     for image_id, y_lab in tqdm(list(zip(df_val.image_name, df_val.iloc[:,2:].values)), miniters=100):
@@ -160,7 +157,7 @@ def main(verbose=1):
 
     ### Infer
     if verbose >= 1: print("Inferring (fold %d)..."%fold_id)
-    y_pred, y_test = infer(model, X_val, y_val, n_inference=20, batch_size=32, verbose=verbose)
+    y_pred, y_test = infer(model, X_val, y_val, n_inference=5, batch_size=32, verbose=verbose)
     if verbose >= 2:
         print(y_pred.shape)
         print(y_test.shape)
