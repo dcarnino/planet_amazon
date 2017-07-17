@@ -200,7 +200,7 @@ def main_val():
 
 def main_test():
 
-    mean_only = False
+    mean_only = True
 
     y_true = []
     y_pred_mean, y_pred_median, y_pred_std, y_pred_min, y_pred_max, y_pred_skew, y_pred_kurtosis, y_pred_iqr, y_pred_entropy = [], [], [], [], [], [], [], [], []
@@ -292,7 +292,7 @@ def main_test():
     pred_labels = [" ".join(labels[np.where(yp > 0.5)]) for yp in y_pred2]
 
     df = pd.DataFrame(np.array([test_ids, pred_labels]).T, columns=["image_name", "tags"])
-    df.to_csv("../data/planet_amazon/submission_file_001.csv", index=False)
+    df.to_csv("../data/planet_amazon/submission_file_002.csv", index=False)
 
 
 
