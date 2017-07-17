@@ -158,7 +158,7 @@ def main_val():
 
             else:
 
-                y_pred_feat = y_pred[..., ix_feat]
+                y_pred_feat = y_pred[..., ix_feat].T
                 y_true_feat = y_true[..., ix_feat]
 
                 clf = XGBClassifier_ensembling(n_folds=20, early_stopping_rounds=10,
