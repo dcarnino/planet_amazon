@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 import glob, cv2
 import random
-import scipy
+from scipy import stats
 
 random.seed(1)
 np.random.seed(1)
@@ -23,12 +23,12 @@ def get_features(path):
         st += im_stats_.var
         st += im_stats_.stddev
         img = np.array(img)[:,:,:3]
-        st += [scipy.stats.kurtosis(img[:,:,0].ravel())]
-        st += [scipy.stats.kurtosis(img[:,:,1].ravel())]
-        st += [scipy.stats.kurtosis(img[:,:,2].ravel())]
-        st += [scipy.stats.skew(img[:,:,0].ravel())]
-        st += [scipy.stats.skew(img[:,:,1].ravel())]
-        st += [scipy.stats.skew(img[:,:,2].ravel())]
+        st += [stats.kurtosis(img[:,:,0].ravel())]
+        st += [stats.kurtosis(img[:,:,1].ravel())]
+        st += [stats.kurtosis(img[:,:,2].ravel())]
+        st += [stats.skew(img[:,:,0].ravel())]
+        st += [stats.skew(img[:,:,1].ravel())]
+        st += [stats.skew(img[:,:,2].ravel())]
         #cv2 jpg
         img = cv2.imread(path)
         bw = cv2.imread(path,0)
