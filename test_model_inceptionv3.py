@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import fbeta_score, f1_score
 from sklearn.model_selection import StratifiedKFold
-from scipy.stats import kurtosis, skew
+from scipy.stats import kurtosis, skew, iqr, entropy
 import gzip
 #==============================================
 #                   Files
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     cross_validate = True
 
     y_true = []
-    y_pred_mean, y_pred_median, y_pred_std, y_pred_min, y_pred_max, y_pred_skew, y_pred_kurtosis = [], [], [], [], [], [], []
+    y_pred_mean, y_pred_median, y_pred_std, y_pred_min, y_pred_max, y_pred_skew, y_pred_kurtosis, y_pred_iqr, y_pred_entropy = [], [], [], [], [], [], [], [], []
 
     for fold_id in range(5):
 
@@ -77,6 +77,8 @@ if __name__ == '__main__':
         y_pred_fold_skew[~np.isfinite(y_pred_fold_skew)] = 0.
         y_pred_fold_kurtosis = kurtosis(y_pred_fold, axis=0, nan_policy='omit')
         y_pred_fold_kurtosis[~np.isfinite(y_pred_fold_kurtosis)] = 0.
+        y_pred_fold_iqr = iqr(y_pred_fold, axis=0)
+        y_pred_fold_entropy = entropy(y_pred_fold)
         y_pred_mean.append(y_pred_fold_mean)
         y_pred_median.append(y_pred_fold_median)
         y_pred_std.append(y_pred_fold_std)
@@ -84,6 +86,8 @@ if __name__ == '__main__':
         y_pred_max.append(y_pred_fold_max)
         y_pred_skew.append(y_pred_fold_skew)
         y_pred_kurtosis.append(y_pred_fold_kurtosis)
+        y_pred_iqr.append(y_pred_fold_iqr)
+        y_pred_entropy.append(y_pred_fold_entropy)
 
         y_true_fold = np.mean(y_true_fold, axis=0)
         y_true.append(y_true_fold)
@@ -95,8 +99,10 @@ if __name__ == '__main__':
     y_pred_max = np.vstack(y_pred_max)
     y_pred_skew = np.vstack(y_pred_skew)
     y_pred_kurtosis = np.vstack(y_pred_kurtosis)
+    y_pred_iqr = np.vstack(y_pred_iqr)
+    y_pred_entropy = np.vstack(y_pred_entropy)
 
-    y_pred = np.array([y_pred_mean, y_pred_median, y_pred_std, y_pred_min, y_pred_max, y_pred_skew, y_pred_kurtosis])
+    y_pred = np.array([y_pred_mean, y_pred_median, y_pred_std, y_pred_min, y_pred_max, y_pred_skew, y_pred_kurtosis, y_pred_iqr, y_pred_entropy])
     y_true = np.vstack(y_true)
 
     if mean_only:
