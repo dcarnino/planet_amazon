@@ -160,7 +160,7 @@ def main(verbose=1):
 
         ### Infer
         if verbose >= 1: print("Inferring (fold %d)..."%fold_id)
-        y_pred, y_test = infer(model, X_val, y_val, n_inference=10, batch_size=32, verbose=verbose)
+        y_pred, y_test = infer(model, X_val, y_val, n_inference=100, batch_size=32, verbose=verbose)
         if verbose >= 2:
             print(y_pred.shape)
             print(y_test.shape)
@@ -217,7 +217,7 @@ def main(verbose=1):
 
             ### Infer
             if verbose >= 1: print("Inferring (fold %d)..."%fold_id)
-            y_pred, _ = infer(model, X_test, y_test, n_inference=2, batch_size=32, verbose=verbose)
+            y_pred, _ = infer(model, X_test, y_test, n_inference=20, batch_size=32, verbose=verbose)
             y_pred_folds.append(y_pred)
             if verbose >= 2:
                 print(y_pred.shape)
@@ -233,7 +233,7 @@ def main(verbose=1):
         with open("../data/planet_amazon/inceptionv3_predstest.npy", "wb") as iOF:
             np.save(iOF, y_pred_folds)
         with open("../data/planet_amazon/inceptionv3_idstest.txt", "w") as iOF:
-            iOF.writelines(image_ids)
+            iOF.writelines([image_id+"\n" for image_id in image_ids])
 
 
 
