@@ -67,10 +67,10 @@ def main_val():
         df_val = pd.read_csv("../data/planet_amazon/val%d.csv"%fold_id)
         if use_extracted_features:
             df_val = df_val.merge(df_feat, how='left', on="image_name")
-            print(df_val.columns)
-            print(df_val.shape)
+            print(df_val.columns[19:])
+            extracted_features = df_val.iloc[:,19:].values
+            print(extracted_features.shape)
             raise(ValueError)
-            #extracted_features = df_val.iloc[]
 
         with open("../data/planet_amazon/inceptionv3_preds%d.npy"%fold_id, "rb") as iOF:
             y_pred_fold = np.load(iOF)
