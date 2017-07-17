@@ -62,11 +62,11 @@ if __name__ == '__main__':
             y_true_fold = np.load(iOF)
 
         print(y_true_fold[0,:3,:])
-        print(y_pred_fold[0,:3,:])
+        print(y_pred_fold[0,:3,:].round())
         print(y_true_fold[1,:3,:])
-        print(y_pred_fold[1,:3,:])
+        print(y_pred_fold[1,:3,:].round())
         print(y_true_fold[2,:3,:])
-        print(y_pred_fold[2,:3,:])
+        print(y_pred_fold[2,:3,:].round())
 
         #y_pred_fold = np.mean(y_pred_fold, axis=0)
         y_pred_fold = y_pred_fold[0,...]
