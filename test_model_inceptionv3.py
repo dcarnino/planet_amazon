@@ -126,7 +126,7 @@ if __name__ == '__main__':
 
             if cross_validate:
 
-                y_pred_feat = y_pred[..., ix_feat]
+                y_pred_feat = y_pred[..., ix_feat].T
                 y_true_feat = y_true[..., ix_feat]
 
                 n_folds = 5
