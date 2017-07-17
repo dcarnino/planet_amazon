@@ -67,7 +67,7 @@ def get_features(path):
         st += [cv2.Sobel(img,cv2.CV_64F,0,1,ksize=5).var()]
         st += [(bw<30).sum()]
         st += [(bw>225).sum()]
-    except:
+    except(IOError):
         print(path)
     return [path, st]
 
@@ -89,7 +89,7 @@ y = train['tags'].str.get_dummies(sep=' ')
 xtrain = normalize_img(train['path']); print('train...')
 print(np.array(xtrain).shape)
 print(train_id.shape)
-pd.DataFrame(np.hstack([train_id.T, xtrain])).to_csv("../data/planet_amazon/train_features.csv", index=False)
+pd.DataFrame(np.hstack([train_id.reshape((-1,1)), xtrain])).to_csv("../data/planet_amazon/train_features.csv", index=False)
 
 test_jpg = glob.glob(in_path + 'test-jpg-v2/*')[:100]
 test = pd.DataFrame([[p.split('/')[3].replace('.jpg',''),p] for p in test_jpg])
