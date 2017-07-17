@@ -200,7 +200,7 @@ def main_val():
 
 def main_test():
 
-    mean_only = True
+    mean_only = False
 
     y_true = []
     y_pred_mean, y_pred_median, y_pred_std, y_pred_min, y_pred_max, y_pred_skew, y_pred_kurtosis, y_pred_iqr, y_pred_entropy = [], [], [], [], [], [], [], [], []
@@ -253,7 +253,7 @@ def main_test():
 
         y_pred2 = np.zeros_like(y_pred_mean)
         for i in range(17):
-            y_pred2[:, i] = (y_pred_mean[:, i] > f2_threshs[i]).astype(np.int)
+            y_pred2[:, i] = (y_pred_mean[:, i] - f2_threshs[i]).astype(np.float)
 
     else:
 
@@ -277,12 +277,25 @@ def main_test():
 
         y_pred2 = np.zeros_like(y_pred_xgb)
         for i in range(17):
-            y_pred2[:, i] = (y_pred_xgb[:, i] > f2_threshs[i]).astype(np.int)
+            y_pred2[:, i] = (y_pred_xgb[:, i] - f2_threshs[i]).astype(np.float)
 
 
     print(len(test_ids))
     print(y_pred2.shape)
     print(y_pred2[:3,:])
+
+    ### handle meteorological conditions
+    # cloudy
+    cloudy_mask = (np.argmax(y_pred2, axis=1) == 6)
+    y_pred2[cloudy_mask, :] = -1.
+    y_pred2[cloudy_mask, 6] = 1.
+    # others
+    y_pred_weather = np.copy(y_pred2)
+    y_pred_weather[:, [5, 6, 10, 11]] += 2.
+    weather_mask = (np.argsort(y_pred_weather, axis=1)[-4:-1])
+    y_pred2[weather_mask] = -1.
+
+    y_pred2 = (y_pred2 > 0.).astype(np.int)
 
     labels = np.array(['agriculture', 'artisinal_mine', 'bare_ground', 'blooming',\
               'blow_down', 'clear', 'cloudy', 'conventional_mine', 'cultivation',\
@@ -292,7 +305,7 @@ def main_test():
     pred_labels = [" ".join(labels[np.where(yp > 0.5)]) for yp in y_pred2]
 
     df = pd.DataFrame(np.array([test_ids, pred_labels]).T, columns=["image_name", "tags"])
-    df.to_csv("../data/planet_amazon/submission_file_002.csv", index=False)
+    df.to_csv("../data/planet_amazon/submission_file_003.csv", index=False)
 
 
 
