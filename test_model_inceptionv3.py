@@ -149,7 +149,7 @@ if __name__ == '__main__':
                     clf.fit(XX_train, yy_train)
 
                     yy_pred = clf.predict_proba(XX_test)
-                    print(f1_score(yy_test, yy_pred, average='micro'))
+                    print(f1_score(yy_test, np.round(yy_pred), average='micro'))
 
                     y_pred_xgb[test_index, ix_feat] = yy_pred
 
