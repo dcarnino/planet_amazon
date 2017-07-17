@@ -48,13 +48,11 @@ def optimise_f2_thresholds(y, p, resolution=100, bmin=0., bmax=1., verbose=1):
 
 
 
-#==============================================
-#                   Main
-#==============================================
-if __name__ == '__main__':
+
+def main_val():
 
     mean_only = False
-    cross_validate = True
+    cross_validate = False
 
     y_true = []
     y_pred_mean, y_pred_median, y_pred_std, y_pred_min, y_pred_max, y_pred_skew, y_pred_kurtosis, y_pred_iqr, y_pred_entropy = [], [], [], [], [], [], [], [], []
@@ -193,3 +191,12 @@ if __name__ == '__main__':
             print(y_pred2[:3,:])
 
             print("Fbeta score: ", fbeta_score(y_true, y_pred2, 2, average='samples'))
+
+
+
+
+#==============================================
+#                   Main
+#==============================================
+if __name__ == '__main__':
+    main_val()
