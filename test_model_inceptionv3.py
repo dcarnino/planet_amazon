@@ -137,7 +137,7 @@ if __name__ == '__main__':
 
                 for fold_cnt, (train_index, test_index) in enumerate(cv.split(y_pred_feat, y_true_feat)):
 
-                    if verbose >= 1: print("XGB feat %d/%d, fold %d/%d..."%(ix_feat+1,17,fold_cnt+1,n_folds))
+                    print("XGB feat %d/%d, fold %d/%d..."%(ix_feat+1,17,fold_cnt+1,n_folds))
 
                     XX_train, XX_test = y_pred_feat[train_index], y_pred_feat[test_index]
                     yy_train, yy_test = y_true_feat[train_index], y_true_feat[test_index]
