@@ -160,7 +160,8 @@ def main(verbose=1):
 
         ### Infer
         if verbose >= 1: print("Inferring (fold %d)..."%fold_id)
-        y_pred, y_test = infer(model, X_val, y_val, n_inference=100, batch_size=32, verbose=verbose)
+        n_inference = 100
+        y_pred, y_test = infer(model, X_val, y_val, n_inference=n_inference, batch_size=32, verbose=verbose)
         if verbose >= 2:
             print(y_pred.shape)
             print(y_test.shape)
@@ -170,9 +171,9 @@ def main(verbose=1):
 
         ### Save preds
         if verbose >= 1: print("Saving preds (fold %d)..."%fold_id)
-        with open("../data/planet_amazon/inceptionv3_preds%d.npy"%fold_id, "wb") as iOF:
+        with open("../data/planet_amazon/inceptionv3_preds%d_%d.npy"%(fold_id,n_inference), "wb") as iOF:
             np.save(iOF, y_pred)
-        with open("../data/planet_amazon/inceptionv3_trues%d.npy"%fold_id, "wb") as iOF:
+        with open("../data/planet_amazon/inceptionv3_trues%d_%d.npy"%(fold_id,n_inference), "wb") as iOF:
             np.save(iOF, y_test)
 
     else:
@@ -217,7 +218,8 @@ def main(verbose=1):
 
             ### Infer
             if verbose >= 1: print("Inferring (fold %d)..."%fold_id)
-            y_pred, _ = infer(model, X_test, y_test, n_inference=20, batch_size=32, verbose=verbose)
+            n_inference = 100
+            y_pred, _ = infer(model, X_test, y_test, n_inference=n_inference//5, batch_size=32, verbose=verbose)
             y_pred_folds.append(y_pred)
             if verbose >= 2:
                 print(y_pred.shape)
@@ -230,9 +232,9 @@ def main(verbose=1):
 
         ### Save preds
         if verbose >= 1: print("Saving preds...")
-        with open("../data/planet_amazon/inceptionv3_predstest.npy", "wb") as iOF:
+        with open("../data/planet_amazon/inceptionv3_predstest_%d.npy"%n_inference, "wb") as iOF:
             np.save(iOF, y_pred_folds)
-        with open("../data/planet_amazon/inceptionv3_idstest.txt", "w") as iOF:
+        with open("../data/planet_amazon/inceptionv3_idstest_%d.txt"%n_inference, "w") as iOF:
             iOF.writelines([image_id+"\n" for image_id in image_ids])
 
 
