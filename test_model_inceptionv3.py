@@ -172,7 +172,7 @@ if __name__ == '__main__':
         if cross_validate:
 
             #f2_threshs = optimise_f2_thresholds(y_true, y_pred_xgb, resolution=100)
-            f2_threshs = [0.2]*17
+            f2_threshs = [0.5]*17
 
             with open("../data/planet_amazon/optimized_thresholds_xgb.txt", "w") as iOF:
                 iOF.writelines([str(thresh)+"\n" for thresh in f2_threshs])
