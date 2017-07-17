@@ -12,6 +12,7 @@ from sklearn.metrics import fbeta_score, f1_score
 from sklearn.model_selection import StratifiedKFold
 from scipy.stats import kurtosis, skew, iqr, entropy
 import gzip
+import pickle
 #==============================================
 #                   Files
 #==============================================
@@ -169,7 +170,7 @@ def main_val():
                 clf.fit(y_pred_feat, y_true_feat)
 
                 with gzip.open("../data/planet_amazon/models/xgb_class%d.gzip", "wb") as iOF:
-                    iOF.dump(clf)
+                    pickle.dump(clf, iOF)
 
 
         if cross_validate:
