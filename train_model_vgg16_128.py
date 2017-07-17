@@ -65,7 +65,7 @@ def instantiate(n_classes, n_dense=1024, vgg_json="vgg16_128_mod.json", target_s
         layer.trainable = False
 
     # compile the model (should be done *after* setting layers to non-trainable)
-    model.compile(optimizer=Adam(lr=0.0005), loss=binary_crossentropy_weighted, metrics=[fbs])
+    model.compile(optimizer=Adam(lr=0.001), loss=binary_crossentropy_weighted, metrics=[fbs])
 
     # serialize model to json
     model_json = model.to_json()
@@ -395,7 +395,7 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(128,128),
     finetune_from_saved(model_dir+"vgg16_128_fine_tuned_check_point_1_%d.h5"%fold_id,
                         model_dir+"vgg16_128_fine_tuned_2_%d.h5"%fold_id,
                         model_dir+"vgg16_128_mod_%d.json"%fold_id,
-                        X_train, y_train, X_val, y_val, batch_size=64, epochs=10, optimizer_lr=0.0002,
+                        X_train, y_train, X_val, y_val, batch_size=64, epochs=10, optimizer_lr=0.0004,
                         nb_freeze=11, patience=2, patience_lr=1, class_imbalance=True,
                         nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
                         vgg_h5_check_point=model_dir+"vgg16_128_fine_tuned_check_point_2_%d.h5"%fold_id,
@@ -405,7 +405,7 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(128,128),
     finetune_from_saved(model_dir+"vgg16_128_fine_tuned_check_point_2_%d.h5"%fold_id,
                         model_dir+"vgg16_128_fine_tuned_3_%d.h5"%fold_id,
                         model_dir+"vgg16_128_mod_%d.json"%fold_id,
-                        X_train, y_train, X_val, y_val, batch_size=64, optimizer_lr=0.00002,
+                        X_train, y_train, X_val, y_val, batch_size=64, optimizer_lr=0.00004,
                         nb_freeze=0, patience=10, patience_lr=3, class_imbalance=True,
                         nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
                         vgg_h5_check_point=model_dir+"vgg16_128_fine_tuned_check_point_3_%d.h5"%fold_id,
