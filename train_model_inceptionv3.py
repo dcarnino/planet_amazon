@@ -87,7 +87,7 @@ def finetune(base_model, model, X_train, y_train, X_val, y_val,
     # let's visualize layer names and layer indices to see how many layers
     # we should freeze:
     with open(layer_names_file, "w") as iOF:
-        for ix, layer in enumerate(base_model.layers):
+        for ix, layer in enumerate(model.layers):
             iOF.write("%d, %s\n"%(ix, layer.name))
             if verbose >= 4: print(ix, layer.name)
 

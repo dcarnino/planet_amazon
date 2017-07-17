@@ -280,11 +280,8 @@ def main_test():
             y_pred2[:, i] = (y_pred_xgb[:, i] - f2_threshs[i]).astype(np.float)
 
 
-    print(len(test_ids))
-    print(y_pred2.shape)
-    print(y_pred2[:3,:])
 
-    ### handle meteorological conditions
+    """### handle meteorological conditions
     # cloudy
     cloudy_mask = (np.argmax(y_pred2, axis=1) == 6)
     y_pred2[cloudy_mask, :] = -1.
@@ -293,7 +290,11 @@ def main_test():
     y_pred_weather = np.copy(y_pred2)
     y_pred_weather[:, [5, 6, 10, 11]] += 2.
     weather_mask = (np.argsort(y_pred_weather, axis=1)[-4:-1])
-    y_pred2[weather_mask] = -1.
+    y_pred2[weather_mask] = -1."""
+
+    print(len(test_ids))
+    print(y_pred2.shape)
+    print(y_pred2[:3,:])
 
     y_pred2 = (y_pred2 > 0.).astype(np.int)
 
