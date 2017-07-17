@@ -57,7 +57,7 @@ def main_val():
     use_extracted_features = True
 
     if use_extracted_features:
-        df_feat = pd.read_csv("../data/planet_amazon/train_features.csv").rename(columns={0: "image_name"})
+        df_feat = pd.read_csv("../data/planet_amazon/train_features.csv").rename(columns={"0": "image_name"})
 
     y_true = []
     y_pred_mean, y_pred_median, y_pred_std, y_pred_min, y_pred_max, y_pred_skew, y_pred_kurtosis, y_pred_iqr, y_pred_entropy = [], [], [], [], [], [], [], [], []
