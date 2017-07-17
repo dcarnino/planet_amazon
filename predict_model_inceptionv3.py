@@ -133,7 +133,7 @@ def main(verbose=1):
     if verbose >= 1: print("Loading images into RAM (fold %d)..."%fold_id)
     image_dir="../data/planet_amazon/train-jpg/"
     target_size = (256,256)
-    df_val = pd.read_csv("../data/planet_amazon/val%d.csv"%fold_id).head(128)
+    df_val = pd.read_csv("../data/planet_amazon/val%d.csv"%fold_id)
     X_val, y_val = [], []
     # for train and validation
     for image_id, y_lab in tqdm(list(zip(df_val.image_name, df_val.iloc[:,2:].values)), miniters=100):
@@ -157,7 +157,7 @@ def main(verbose=1):
 
     ### Infer
     if verbose >= 1: print("Inferring (fold %d)..."%fold_id)
-    y_pred, y_test = infer(model, X_val, y_val, n_inference=5, batch_size=32, verbose=verbose)
+    y_pred, y_test = infer(model, X_val, y_val, n_inference=10, batch_size=32, verbose=verbose)
     if verbose >= 2:
         print(y_pred.shape)
         print(y_test.shape)
