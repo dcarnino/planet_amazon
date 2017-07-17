@@ -21,7 +21,7 @@ from xgboost_ensembling import XGBClassifier_ensembling
 #==============================================
 #                   Functions
 #==============================================
-def optimise_f2_thresholds(y, p, resolution=100, bmin=0, bmax=100, verbose=1):
+def optimise_f2_thresholds(y, p, resolution=100, bmin=0., bmax=1., verbose=1):
 
     def mf(x):
         p2 = np.zeros_like(p)
@@ -34,8 +34,7 @@ def optimise_f2_thresholds(y, p, resolution=100, bmin=0, bmax=100, verbose=1):
     for i in range(17):
         best_i2 = 0
         best_score = 0
-        for i2 in range(bmin, bmax):
-            i2 /= float(resolution)
+        for i2 in np.linspace(bmin, bmax, resolution):
             x[i] = i2
             score = mf(x)
             if score > best_score:
@@ -171,7 +170,7 @@ if __name__ == '__main__':
 
         if cross_validate:
 
-            f2_threshs = optimise_f2_thresholds(y_true, y_pred_xgb, bmin=40, bmax=51, resolution=100)
+            f2_threshs = optimise_f2_thresholds(y_true, y_pred_xgb, bmin=0.4, bmax=0.51, resolution=100)
             #f2_threshs = [0.5]*17
 
             with open("../data/planet_amazon/optimized_thresholds_xgb.txt", "w") as iOF:
