@@ -1,4 +1,5 @@
 from multiprocessing import Pool, cpu_count
+from PIL import Image, ImageStat
 from skimage import io
 import pandas as pd
 import numpy as np
