@@ -53,7 +53,11 @@ def optimise_f2_thresholds(y, p, resolution=100, bmin=0., bmax=1., verbose=1):
 def main_val():
 
     mean_only = False
-    cross_validate = False
+    cross_validate = True
+    use_extracted_features = True
+
+    if use_extracted_features:
+        df_feat = pd.read_csv("../data/planet_amazon/train_features.csv").rename(columns={0: "image_name"})
 
     y_true = []
     y_pred_mean, y_pred_median, y_pred_std, y_pred_min, y_pred_max, y_pred_skew, y_pred_kurtosis, y_pred_iqr, y_pred_entropy = [], [], [], [], [], [], [], [], []
@@ -61,6 +65,11 @@ def main_val():
     for fold_id in range(5):
 
         df_val = pd.read_csv("../data/planet_amazon/val%d.csv"%fold_id)
+        df_val = df_val.merge(df_feat, how='left', on="image_name")
+        print(df_val.columns)
+        print(df_val.shape)
+        raise(ValueError)
+        extracted_features = df_val.iloc[]
 
         with open("../data/planet_amazon/inceptionv3_preds%d.npy"%fold_id, "rb") as iOF:
             y_pred_fold = np.load(iOF)
@@ -145,8 +154,8 @@ def main_val():
                     XX_train, XX_test = y_pred_feat[train_index], y_pred_feat[test_index]
                     yy_train, yy_test = y_true_feat[train_index], y_true_feat[test_index]
 
-                    clf = XGBClassifier_ensembling(n_folds=20, early_stopping_rounds=10,
-                                                   max_depth=5, learning_rate=0.02,
+                    clf = XGBClassifier_ensembling(n_folds=5, early_stopping_rounds=10,
+                                                   max_depth=10, learning_rate=0.02,
                                                    objective='binary:logistic', nthread=28,
                                                    min_child_weight=4, subsample=0.7)
 
