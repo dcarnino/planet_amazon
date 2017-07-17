@@ -1,9 +1,5 @@
 from multiprocessing import Pool, cpu_count
-from sklearn.ensemble import ExtraTreesRegressor
-from sklearn.metrics import fbeta_score
-from PIL import Image, ImageStat
 from skimage import io
-import xgboost as xgb
 import pandas as pd
 import numpy as np
 import glob, cv2
