@@ -58,6 +58,7 @@ def main_val():
 
     if use_extracted_features:
         df_feat = pd.read_csv("../data/planet_amazon/train_features.csv").rename(columns={"0": "image_name"})
+        extracted_features = []
 
     y_true = []
     y_pred_mean, y_pred_median, y_pred_std, y_pred_min, y_pred_max, y_pred_skew, y_pred_kurtosis, y_pred_iqr, y_pred_entropy = [], [], [], [], [], [], [], [], []
@@ -67,7 +68,7 @@ def main_val():
         df_val = pd.read_csv("../data/planet_amazon/val%d.csv"%fold_id)
         if use_extracted_features:
             df_val = df_val.merge(df_feat, how='left', on="image_name")
-            extracted_features = df_val.iloc[:,19:].values
+            extracted_features_fold = df_val.iloc[:,19:].values
 
         with open("../data/planet_amazon/inceptionv3_preds%d.npy"%fold_id, "rb") as iOF:
             y_pred_fold = np.load(iOF)
@@ -98,6 +99,8 @@ def main_val():
         y_true_fold = np.mean(y_true_fold, axis=0)
         y_true.append(y_true_fold)
 
+        if use_extracted_features: extracted_features.append(extracted_features_fold)
+
     y_pred_mean = np.vstack(y_pred_mean)
     y_pred_median = np.vstack(y_pred_median)
     y_pred_std = np.vstack(y_pred_std)
@@ -110,6 +113,8 @@ def main_val():
 
     y_pred = np.array([y_pred_mean, y_pred_median, y_pred_std, y_pred_min, y_pred_max, y_pred_skew, y_pred_kurtosis, y_pred_iqr, y_pred_entropy])
     y_true = np.vstack(y_true)
+
+    if use_extracted_features: extracted_features = np.vstack(extracted_features)
 
     if mean_only:
 
@@ -141,8 +146,6 @@ def main_val():
 
                 y_pred_feat = y_pred[..., ix_feat].T
                 if use_extracted_features:
-                    print(y_pred_feat.shape)
-                    print(extracted_features.shape)
                     y_pred_feat = np.hstack([y_pred_feat, extracted_features])
                 y_true_feat = y_true[..., ix_feat]
 
