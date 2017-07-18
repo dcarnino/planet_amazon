@@ -403,8 +403,8 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(197,197),
                         nb_freeze=0, patience=5, patience_lr=1, class_imbalance=False,
                         nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
                         resnet_h5_check_point=model_dir+"resnet50_128_fine_tuned_check_point_3_%d.h5"%fold_id,
-                        verbose=verbose)"""
-    K.clear_session()
+                        verbose=verbose)
+    K.clear_session()"""
 
 
 
