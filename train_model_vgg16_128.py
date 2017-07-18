@@ -381,7 +381,7 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(128,128),
 
     ### Train model
     if verbose >= 1: print("\tFine-tuning VGG16 first pass (fold %d)..."%fold_id)
-    finetune(base_model, model, X_train, y_train, X_val, y_val, batch_size=64, epochs_1=5,
+    finetune(base_model, model, X_train, y_train, X_val, y_val, batch_size=64, epochs_1=3,
              nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
              patience_1=2, patience_lr=1, class_imbalance=False,
              vgg_h5_1=model_dir+"vgg16_128_fine_tuned_1_%d.h5"%fold_id,
