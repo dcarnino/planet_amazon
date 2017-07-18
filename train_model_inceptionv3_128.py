@@ -278,7 +278,7 @@ def get_class_weights(y, smooth_factor=0):
     if smooth_factor > 0:
         p = y.max() * smooth_factor
         y = y + p
-3
+
     majority = float(y.max())
 
     return {clss: (majority / cnt) for clss, cnt in enumerate(y)}
