@@ -390,7 +390,7 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(197,197),
                         model_dir+"resnet50_128_fine_tuned_2_%d.h5"%fold_id,
                         model_dir+"resnet50_128_mod_%d.json"%fold_id,
                         X_train, y_train, X_val, y_val, batch_size=40, epochs=1000, optimizer_lr=0.0003,
-                        nb_freeze=80, patience=5, patience_lr=1, class_imbalance=False,
+                        nb_freeze=80, patience=4, patience_lr=1, class_imbalance=False,
                         nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
                         resnet_h5_check_point=model_dir+"resnet50_128_fine_tuned_check_point_2_%d.h5"%fold_id,
                         verbose=verbose)
