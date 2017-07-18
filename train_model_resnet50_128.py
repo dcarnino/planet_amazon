@@ -37,7 +37,7 @@ from extend_image_data_generator import ImageDataGenerator
 #==============================================
 #                   Functions
 #==============================================
-def instantiate(n_classes, n_dense=1024, resnet_json="resnet50_128_mod.json", target_size=(128,128,3), verbose=1):
+def instantiate(n_classes, n_dense=1024, resnet_json="resnet50_128_mod.json", target_size=(197,197,3), verbose=1):
     """
     Instantiate the resnet 16.
     """
@@ -60,7 +60,7 @@ def instantiate(n_classes, n_dense=1024, resnet_json="resnet50_128_mod.json", ta
         layer.trainable = False
 
     # compile the model (should be done *after* setting layers to non-trainable)
-    model.compile(optimizer=Adam(lr=0.001), loss="binary_crossentropy", metrics=[fbs])
+    model.compile(optimizer=Adam(lr=0.0008), loss="binary_crossentropy", metrics=[fbs])
 
     # serialize model to json
     model_json = model.to_json()
@@ -316,7 +316,7 @@ def binary_crossentropy_weighted(y_true, y_pred, one_weight=4.):
 
 
 
-def train_for_a_fold(df_train, df_val, fold_id, target_size=(128,128),
+def train_for_a_fold(df_train, df_val, fold_id, target_size=(197,197),
                      model_dir="../data/planet_amazon/models/",
                      image_dir="../data/planet_amazon/train-jpg/",
                      verbose=1):
@@ -375,7 +375,7 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(128,128),
 
     ### Train model
     if verbose >= 1: print("\tFine-tuning ResNet50 first pass (fold %d)..."%fold_id)
-    finetune(base_model, model, X_train, y_train, X_val, y_val, batch_size=64, epochs_1=4,
+    finetune(base_model, model, X_train, y_train, X_val, y_val, batch_size=48, epochs_1=4,
              nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
              patience_1=2, patience_lr=1, class_imbalance=False,
              resnet_h5_1=model_dir+"resnet50_128_fine_tuned_1_%d.h5"%fold_id,
@@ -389,7 +389,7 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(128,128),
     finetune_from_saved(model_dir+"resnet50_128_fine_tuned_check_point_1_%d.h5"%fold_id,
                         model_dir+"resnet50_128_fine_tuned_2_%d.h5"%fold_id,
                         model_dir+"resnet50_128_mod_%d.json"%fold_id,
-                        X_train, y_train, X_val, y_val, batch_size=64, epochs=8, optimizer_lr=0.0004,
+                        X_train, y_train, X_val, y_val, batch_size=48, epochs=8, optimizer_lr=0.0003,
                         nb_freeze=80, patience=2, patience_lr=1, class_imbalance=False,
                         nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
                         resnet_h5_check_point=model_dir+"resnet50_128_fine_tuned_check_point_2_%d.h5"%fold_id,
@@ -399,7 +399,7 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(128,128),
     finetune_from_saved(model_dir+"resnet50_128_fine_tuned_check_point_2_%d.h5"%fold_id,
                         model_dir+"resnet50_128_fine_tuned_3_%d.h5"%fold_id,
                         model_dir+"resnet50_128_mod_%d.json"%fold_id,
-                        X_train, y_train, X_val, y_val, batch_size=64, optimizer_lr=0.00004,
+                        X_train, y_train, X_val, y_val, batch_size=48, optimizer_lr=0.00003,
                         nb_freeze=0, patience=7, patience_lr=1, class_imbalance=False,
                         nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
                         resnet_h5_check_point=model_dir+"resnet50_128_fine_tuned_check_point_3_%d.h5"%fold_id,
