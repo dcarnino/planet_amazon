@@ -108,8 +108,8 @@ def finetune(base_model, model, X_train, y_train, X_val, y_val,
         fill_mode='reflect',
         p_rotation=0.2,
         rotation_angles=[-90, 0, 90, 180],
-        p_zoom=0.4,
-        p_shift=0.4)
+        p_zoom=0.5,
+        p_shift=0.5)
 
     # this is the augmentation configuration we will use for testing:
     test_datagen = ImageDataGenerator(
@@ -212,8 +212,8 @@ def finetune_from_saved(vgg_h5_load_from, vgg_h5_save_to,
         fill_mode='reflect',
         p_rotation=0.2,
         rotation_angles=[-90, 0, 90, 180],
-        p_zoom=0.4,
-        p_shift=0.4)
+        p_zoom=0.5,
+        p_shift=0.5)
 
     # this is the augmentation configuration we will use for testing:
     test_datagen = ImageDataGenerator(
@@ -406,7 +406,7 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(128,128),
                         model_dir+"vgg16_128_fine_tuned_3_%d.h5"%fold_id,
                         model_dir+"vgg16_128_mod_%d.json"%fold_id,
                         X_train, y_train, X_val, y_val, batch_size=64, optimizer_lr=0.00004,
-                        nb_freeze=0, patience=10, patience_lr=3, class_imbalance=False,
+                        nb_freeze=0, patience=7, patience_lr=1, class_imbalance=False,
                         nb_train_samples=len(y_train), nb_validation_samples=len(y_val),
                         vgg_h5_check_point=model_dir+"vgg16_128_fine_tuned_check_point_3_%d.h5"%fold_id,
                         verbose=verbose)
