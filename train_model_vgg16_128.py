@@ -16,7 +16,7 @@ import time
 import gzip
 import pickle
 from collections import Counter
-from keras.applications.vgg16_128 import VGG16
+from keras.applications.vgg16 import VGG16
 from keras.preprocessing.image import load_img, img_to_array
 from keras.models import Model, model_from_json
 from keras.layers import Dense, Flatten, Dropout

@@ -16,7 +16,7 @@ import time
 import gzip
 import pickle
 from collections import Counter
-from keras.applications.resnet50_128 import ResNet50
+from keras.applications.resnet50 import ResNet50
 from keras.preprocessing.image import load_img, img_to_array
 from keras.models import Model, model_from_json
 from keras.layers import Dense, Flatten, Dropout
