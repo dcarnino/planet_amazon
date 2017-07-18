@@ -65,7 +65,7 @@ def instantiate(n_classes, n_dense=1024, vgg_json="vgg16_128_mod.json", target_s
         layer.trainable = False
 
     # compile the model (should be done *after* setting layers to non-trainable)
-    model.compile(optimizer=Adam(lr=0.001), loss=binary_crossentropy_weighted, metrics=[fbs])
+    model.compile(optimizer=Adam(lr=0.001), loss="binary_crossentropy", metrics=[fbs])
 
     # serialize model to json
     model_json = model.to_json()
@@ -121,10 +121,10 @@ def finetune(base_model, model, X_train, y_train, X_val, y_val,
         height_shift_range=0.15,
         rotation_range=180,
         fill_mode='reflect',
-        p_rotation=0.2,
+        p_rotation=0.,
         rotation_angles=[-90, 0, 90, 180],
-        p_zoom=0.4,
-        p_shift=0.4)
+        p_zoom=0.,
+        p_shift=0.)
 
     # define train & val data generators
     train_generator = train_datagen.flow(
@@ -194,7 +194,7 @@ def finetune_from_saved(vgg_h5_load_from, vgg_h5_save_to,
 
     # we need to recompile the model for these modifications to take effect
     # we use SGD with a low learning rate
-    loaded_model.compile(optimizer=Adam(lr=optimizer_lr), loss=binary_crossentropy_weighted, metrics=[fbs])
+    loaded_model.compile(optimizer=Adam(lr=optimizer_lr), loss="binary_crossentropy", metrics=[fbs])
 
     if verbose >= 2:
         print(loaded_model.layers[21].get_config())
@@ -225,10 +225,10 @@ def finetune_from_saved(vgg_h5_load_from, vgg_h5_save_to,
         height_shift_range=0.15,
         rotation_range=180,
         fill_mode='reflect',
-        p_rotation=0.2,
+        p_rotation=0.,
         rotation_angles=[-90, 0, 90, 180],
-        p_zoom=0.4,
-        p_shift=0.4)
+        p_zoom=0.,
+        p_shift=0.)
 
     # define train & val data generators
     train_generator = train_datagen.flow(
@@ -294,7 +294,7 @@ def f2_score(y_true, y_pred):
 
 
 
-def fbs(y_true, y_pred, threshold_shift=0., beta=2):
+def fbs(y_true, y_pred, threshold_shift=0.3, beta=2):
 
     # just in case of hipster activation at the final layer
     y_pred = K.clip(y_pred, 0, 1)
@@ -348,7 +348,7 @@ def train_for_a_fold(df_train, df_val, fold_id, target_size=(128,128),
     X_train, y_train = [], []
     X_val, y_val = [], []
     # for train and validation
-    for df, X, y, n_max_img in [(df_train, X_train, y_train, 10), (df_val, X_val, y_val, 1)]:
+    for df, X, y, n_max_img in [(df_train, X_train, y_train, 1), (df_val, X_val, y_val, 1)]:
         for image_id, y_lab in tqdm(list(zip(df.image_name, df.iloc[:,2:].values)), miniters=100):
             image_path = image_dir+str(image_id)+".jpg"
             if os.path.exists(image_path):
