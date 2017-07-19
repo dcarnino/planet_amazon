@@ -77,7 +77,7 @@ def main(verbose=1):
             print(y_val.shape)
             print(y_pred[0,0,0])
             print(y_val[0,0,0])
-            print("Fbeta score: ", fbeta_score(y_val, y_pred.round(), 2, average='samples'))
+            print("Fbeta score: ", fbeta_score(np.mean(y_val, axis=0), np.mean(y_pred, axis=0).round(), 2, average='samples'))
 
         ### Save preds
         if verbose >= 1: print("Saving preds (fold %d)..."%fold_id)
