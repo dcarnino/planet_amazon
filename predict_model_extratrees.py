@@ -56,7 +56,7 @@ def main(verbose=1):
 
             y_train_feat = y_train[:, ix_feat]
 
-            clf = ExtraTreesClassifier(n_estimators=112, max_depth=5, bootstrap=True, n_jobs=-1)
+            clf = ExtraTreesClassifier(n_estimators=112, max_depth=30, bootstrap=True, n_jobs=-1)
 
             clf.fit(X_train, y_train_feat)
 
@@ -67,7 +67,7 @@ def main(verbose=1):
             print(y_pred[:, ix_feat].shape)
             print(y_pred[:5, ix_feat])
             print(y_pred[0,ix_feat])
-            y_pred[0,0] = 1.
+            y_pred[0,ix_feat] = 1.
             print(y_pred[0,ix_feat])
 
             with gzip.open("../data/planet_amazon/models/et_%d_class%d.gzip"%(fold_id,ix_feat), "wb") as iOF:
