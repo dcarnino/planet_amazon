@@ -233,7 +233,7 @@ def main(verbose=1):
 
         ##### Test
         y_pred_folds = []
-        offset = 0
+        offset = 10
         for fold_id in range(offset,offset+5):
 
             ### Load images for train
