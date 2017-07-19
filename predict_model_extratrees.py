@@ -66,7 +66,6 @@ def main(verbose=1):
             with gzip.open("../data/planet_amazon/models/et_%d_class%d.gzip"%(fold_id,ix_feat), "wb") as iOF:
                 pickle.dump(clf, iOF)
 
-        print(np.where(y_pred != 0))
         y_pred = np.array([y_pred])
         y_val = np.array([y_val])
 
