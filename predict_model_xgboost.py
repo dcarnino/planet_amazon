@@ -58,7 +58,7 @@ def main(verbose=1):
 
             clf = XGBClassifier_ensembling(n_folds=20, early_stopping_rounds=10,
                                            max_depth=7, learning_rate=0.02,
-                                           objective='binary:logistic', nthread=28,
+                                           objective='binary:logistic', nthread=2,
                                            min_child_weight=4, subsample=0.7, colsample_bytree=0.7)
 
             clf.fit(X_train, y_train_feat)
