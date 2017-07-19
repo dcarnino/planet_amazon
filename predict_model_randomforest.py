@@ -15,10 +15,10 @@ from sklearn.model_selection import StratifiedKFold
 from scipy.stats import kurtosis, skew, iqr, entropy
 import gzip
 import pickle
+from sklearn.ensemble import RandomForestClassifier
 #==============================================
 #                   Files
 #==============================================
-from xgboost_ensembling import XGBClassifier_ensembling
 
 
 #==============================================
@@ -52,21 +52,18 @@ def main(verbose=1):
 
         for ix_feat in range(17):
 
-            if verbose >= 1: print("\tXGB feat %d/%d..."%(ix_feat+1,17))
+            if verbose >= 1: print("\tRF feat %d/%d..."%(ix_feat+1,17))
 
             y_train_feat = y_train[:, ix_feat]
 
-            clf = XGBClassifier_ensembling(n_folds=20, early_stopping_rounds=10,
-                                           max_depth=7, learning_rate=0.02,
-                                           objective='binary:logistic', nthread=28,
-                                           min_child_weight=4, subsample=0.7, colsample_bytree=0.7)
+            clf = RandomForestClassifier(n_estimators=1000, bootstrap=True, n_jobs=28)
 
             clf.fit(X_train, y_train_feat)
 
-            y_pred_feat = clf.predict_proba(X_val)
+            y_pred_feat = np.array([p2 for p1, p2 in clf.predict_proba(X_val)])
             y_pred[:, ix_feat] = y_pred_feat
 
-            with gzip.open("../data/planet_amazon/models/xgb_%d_class%d.gzip"%(fold_id,ix_feat), "wb") as iOF:
+            with gzip.open("../data/planet_amazon/models/rf_%d_class%d.gzip"%(fold_id,ix_feat), "wb") as iOF:
                 pickle.dump(clf, iOF)
 
         y_pred = np.array([y_pred])
@@ -81,9 +78,9 @@ def main(verbose=1):
 
         ### Save preds
         if verbose >= 1: print("Saving preds (fold %d)..."%fold_id)
-        with open("../data/planet_amazon/xgboost_preds%d.npy"%(fold_id), "wb") as iOF:
+        with open("../data/planet_amazon/randomforest_preds%d.npy"%(fold_id), "wb") as iOF:
             np.save(iOF, y_pred)
-        with open("../data/planet_amazon/xgboost_trues%d.npy"%(fold_id), "wb") as iOF:
+        with open("../data/planet_amazon/randomforest_trues%d.npy"%(fold_id), "wb") as iOF:
             np.save(iOF, y_val)
 
     else:
@@ -97,7 +94,7 @@ def main(verbose=1):
 
         ##### Test
         y_pred_folds = []
-        offset = 30
+        offset = 70
         for fold_id in range(offset,offset+20):
 
             ### Infer
@@ -107,12 +104,12 @@ def main(verbose=1):
 
             for ix_feat in range(17):
 
-                if verbose >= 1: print("\tXGB feat %d/%d..."%(ix_feat+1,17))
+                if verbose >= 1: print("\tRF feat %d/%d..."%(ix_feat+1,17))
 
-                with gzip.open("../data/planet_amazon/models/xgb_%d_class%d.gzip"%(fold_id,ix_feat), "rb") as iOF:
+                with gzip.open("../data/planet_amazon/models/rf_%d_class%d.gzip"%(fold_id,ix_feat), "rb") as iOF:
                     clf = pickle.load(iOF)
 
-                y_pred_feat = clf.predict_proba(X_test)
+                y_pred_feat = np.array([p2 for p1, p2 in clf.predict_proba(X_test)])
                 y_pred[:, ix_feat] = y_pred_feat
 
             y_pred_folds.append(y_pred)
@@ -124,9 +121,9 @@ def main(verbose=1):
 
         ### Save preds
         if verbose >= 1: print("Saving preds...")
-        with open("../data/planet_amazon/xgboost_predstest.npy", "wb") as iOF:
+        with open("../data/planet_amazon/randomforest_predstest.npy", "wb") as iOF:
             np.save(iOF, y_pred_folds)
-        with open("../data/planet_amazon/xgboost_idstest.txt", "w") as iOF:
+        with open("../data/planet_amazon/randomforest_idstest.txt", "w") as iOF:
             iOF.writelines([image_id+"\n" for image_id in image_ids])
 
 
