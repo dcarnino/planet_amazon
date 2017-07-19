@@ -56,15 +56,18 @@ def main(verbose=1):
 
             y_train_feat = y_train[:, ix_feat]
 
-            clf = XGBClassifier_ensembling(n_folds=20, early_stopping_rounds=10,
+            clf = XGBClassifier_ensembling(n_folds=2, early_stopping_rounds=10,
                                            max_depth=7, learning_rate=0.02,
-                                           objective='binary:logistic', nthread=1,
+                                           objective='binary:logistic', nthread=28,
                                            min_child_weight=4, subsample=0.7, colsample_bytree=0.7)
 
             clf.fit(X_train, y_train_feat)
 
             y_pred_feat = clf.predict_proba(X_val)
+            print(y_pred_feat[:5])
+            print(y_pred[:, ix_feat][:5])
             y_pred[:, ix_feat] = y_pred_feat
+            print(y_pred[:, ix_feat][:5])
 
             with gzip.open("../data/planet_amazon/models/xgb_%d_class%d.gzip"%(fold_id,ix_feat), "wb") as iOF:
                 pickle.dump(clf, iOF)
