@@ -80,7 +80,7 @@ def finetune(base_model, model, X_train, y_train, X_val, y_val,
              resnet_h5_check_point_1="resnet50_fine_tuned_check_point_1.h5",
              layer_names_file="resnet50_mod_layer_names.txt", verbose=1):
     """
-    Finetune the resnet 16.
+    Finetune the resnet50.
     """
 
     # let's visualize layer names and layer indices to see how many layers
