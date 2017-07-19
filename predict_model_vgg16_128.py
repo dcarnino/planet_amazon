@@ -207,7 +207,7 @@ def main(verbose=1):
 
         ##### Test
         y_pred_folds = []
-        offset = 0
+        offset = 20
         for fold_id in range(offset,offset+5):
             ### Load model
             if verbose >= 1: print("Loading model (fold %d)..."%fold_id)
