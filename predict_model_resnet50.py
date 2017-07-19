@@ -186,7 +186,7 @@ def main(verbose=1):
 
         ### Infer
         if verbose >= 1: print("Inferring (fold %d)..."%fold_id)
-        n_inference = 100
+        n_inference = 50
         y_pred, y_test = infer(model, X_val, y_val, X_train, n_inference=n_inference, batch_size=32, verbose=verbose)
         if verbose >= 2:
             print(y_pred.shape)
@@ -270,7 +270,7 @@ def main(verbose=1):
 
             ### Infer
             if verbose >= 1: print("Inferring (fold %d)..."%fold_id)
-            n_inference = 100
+            n_inference = 50
             y_pred, _ = infer(model, X_test, y_test, X_train, n_inference=n_inference//5, batch_size=32, verbose=verbose)
             y_pred_folds.append(y_pred)
             if verbose >= 2:
