@@ -94,8 +94,8 @@ def main(verbose=1):
 
         ##### Test
         y_pred_folds = []
-        offset = 70
-        for fold_id in range(offset,offset+20):
+        offset = 110
+        for fold_id in range(offset,offset+10):
 
             ### Infer
             if verbose >= 1: print("Inferring (fold %d)..."%fold_id)
