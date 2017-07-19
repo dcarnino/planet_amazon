@@ -42,7 +42,7 @@ if __name__ == '__main__':
 
     # stratified k-fold
     offset_folds = int(sys.argv[1])
-    n_folds = 5
+    n_folds = int(sys.argv[2])
     ix_folds = proba_mass_split(y_train, n_folds=n_folds)
 
     # write to file
