@@ -81,10 +81,8 @@ def main(verbose=1):
 
         ### Save preds
         if verbose >= 1: print("Saving preds (fold %d)..."%fold_id)
-        with open("../data/planet_amazon/xgboost_preds%d.npy"%(fold_id), "wb") as iOF:
-            np.save(iOF, y_pred)
-        with open("../data/planet_amazon/xgboost_trues%d.npy"%(fold_id), "wb") as iOF:
-            np.save(iOF, y_val)
+        np.save("../data/planet_amazon/xgboost_preds%d.npy"%(fold_id), y_pred)
+        np.save("../data/planet_amazon/xgboost_trues%d.npy"%(fold_id), y_val)
 
     else:
 
