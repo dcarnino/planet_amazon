@@ -56,7 +56,7 @@ def main(verbose=1):
 
             y_train_feat = y_train[:, ix_feat]
 
-            clf = RandomForestClassifier(n_estimators=1000, bootstrap=True, n_jobs=28)
+            clf = RandomForestClassifier(n_estimators=1000, bootstrap=True, n_jobs=-1)
 
             clf.fit(X_train, y_train_feat)
 
