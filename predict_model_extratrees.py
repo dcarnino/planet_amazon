@@ -45,7 +45,7 @@ def main(verbose=1):
         X_val = df_val.iloc[:,19:].values
         y_val = df_val.iloc[:,2:19].values
 
-        y_pred = np.zeros_like(y_val)
+        y_pred = np.zeros_like(y_val, dtype=np.float)
 
         ### Train, pickle, and infer
         if verbose >= 1: print("Training (fold %d)..."%fold_id)
