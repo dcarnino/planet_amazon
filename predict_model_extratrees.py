@@ -56,7 +56,7 @@ def main(verbose=1):
 
             y_train_feat = y_train[:, ix_feat]
 
-            clf = ExtraTreesClassifier(n_estimators=112, max_depth=30, bootstrap=True, n_jobs=-1)
+            clf = ExtraTreesClassifier(n_estimators=112, max_depth=10, bootstrap=True, n_jobs=-1)
 
             clf.fit(X_train, y_train_feat)
 
