@@ -61,9 +61,11 @@ def main(verbose=1):
             clf.fit(X_train, y_train_feat)
 
             y_pred_feat = np.array([p2 for p1, p2 in clf.predict_proba(X_val)])
-            print(y_pred_feat)
-            print(np.where(y_pred_feat != 0))
+            print(y_pred_feat.shape)
+            print(y_pred_feat[:5])
             y_pred[:, ix_feat] = y_pred_feat
+            print(y_pred[:, ix_feat].shape)
+            print(y_pred[:5, ix_feat])
 
             with gzip.open("../data/planet_amazon/models/et_%d_class%d.gzip"%(fold_id,ix_feat), "wb") as iOF:
                 pickle.dump(clf, iOF)
