@@ -66,9 +66,6 @@ def main_val():
     net_list = ["inceptionv3", "vgg16", "resnet50", "inceptionv3_128", "vgg16_128", "resnet50_128", "xgboost", "extratrees"]
     offset_list = [0, 5, 10, 15, 20, 25, 90, 100]
     n_folds_list = [5, 5, 5, 5, 5, 5, 10, 10]
-    net_list[5:6] = []
-    offset_list[5:6] = []
-    n_folds_list[5:6] = []
     for net, offset, n_folds in zip(net_list, offset_list, n_folds_list):
 
         print("Processing model %s..."%net)
@@ -144,7 +141,6 @@ def main_val():
     if mean_only:
 
         y_pred = np.array([net_preds[net_name][0,:,:] for net_name in net_list]+\
-                          [net_preds[net_name][1,:,:] for net_name in net_list if net_name != "xgboost" and net_name != "extratrees"]+\
                           [net_preds[net_name][4,:,:] for net_name in net_list if net_name != "xgboost" and net_name != "extratrees"])
         y_true = net_trues[net_list[0]]
 
