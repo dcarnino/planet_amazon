@@ -119,8 +119,7 @@ def main(verbose=1):
 
         ### Save preds
         if verbose >= 1: print("Saving preds...")
-        with open("../data/planet_amazon/extratrees_predstest.npy", "wb") as iOF:
-            np.save(iOF, y_pred_folds)
+        np.save("../data/planet_amazon/extratrees_predstest.npy", y_pred_folds)
         with open("../data/planet_amazon/extratrees_idstest.txt", "w") as iOF:
             iOF.writelines([image_id+"\n" for image_id in image_ids])
 
