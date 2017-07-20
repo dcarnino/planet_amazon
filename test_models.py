@@ -66,9 +66,12 @@ def main_val():
     net_list = ["inceptionv3", "vgg16", "resnet50", "inceptionv3_128", "vgg16_128", "resnet50_128", "xgboost", "extratrees"]
     offset_list = [0, 5, 10, 15, 20, 25, 90, 100]
     n_folds_list = [5, 5, 5, 5, 5, 5, 10, 10]
-    net_list[5:6] = []
-    offset_list[5:6] = []
-    n_folds_list[5:6] = []
+    net_list[5:8] = []
+    net_list[0:3] = []
+    offset_list[5:8] = []
+    offset_list[0:3] = []
+    n_folds_list[5:8] = []
+    n_folds_list[0:3] = []
     for net, offset, n_folds in zip(net_list, offset_list, n_folds_list):
 
         print("Processing model %s..."%net)
