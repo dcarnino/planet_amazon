@@ -145,7 +145,7 @@ def main_val():
 
         y_pred = np.array([net_preds[net_name][0,:,:] for net_name in net_list]+\
                           [net_preds[net_name][4,:,:] for net_name in net_list if net_name != "xgboost" and net_name != "extratrees"]+\
-                          [net_preds[net_name][2,:,:] for net_name in net_list if net_name != "xgboost" and net_name != "extratrees"])
+                          [net_preds[net_name][3,:,:] for net_name in net_list if net_name != "xgboost" and net_name != "extratrees"])
         y_true = net_trues[net_list[0]]
 
         y_pred_logit = np.zeros_like(net_trues[net_list[0]], dtype=np.float)
