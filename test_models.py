@@ -54,7 +54,7 @@ def optimise_f2_thresholds(y, p, resolution=100, bmin=0., bmax=1., verbose=1):
 def main_val():
 
     mean_only = True
-    cross_validate = True
+    cross_validate = False
 
     print("Importing features...")
     df_feat = pd.read_csv("../data/planet_amazon/train_features.csv").rename(columns={"0": "image_name"})
@@ -165,7 +165,7 @@ def main_val():
                     XX_train, XX_test = y_pred_feat[train_index], y_pred_feat[test_index]
                     yy_train, yy_test = y_true_feat[train_index], y_true_feat[test_index]
 
-                    clf = LogisticRegression(n_jobs=15, max_iter=1000, C=2., tol=1e-6)
+                    clf = LogisticRegression(n_jobs=15, max_iter=1000, C=2.)
 
                     clf.fit(XX_train, yy_train)
 
@@ -181,7 +181,7 @@ def main_val():
                 y_pred_feat = y_pred[..., ix_feat].T
                 y_true_feat = y_true[..., ix_feat]
 
-                clf = LogisticRegression(n_jobs=15)
+                clf = LogisticRegression(n_jobs=15, max_iter=1000, C=2.)
 
                 clf.fit(y_pred_feat, y_true_feat)
 
