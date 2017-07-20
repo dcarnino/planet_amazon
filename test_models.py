@@ -54,7 +54,7 @@ def optimise_f2_thresholds(y, p, resolution=100, bmin=0., bmax=1., verbose=1):
 def main_val():
 
     mean_only = True
-    cross_validate = True
+    cross_validate = False
 
     print("Importing features...")
     df_feat = pd.read_csv("../data/planet_amazon/train_features.csv").rename(columns={"0": "image_name"})
