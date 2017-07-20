@@ -334,7 +334,7 @@ def main_test():
 
         y_pred_logit = np.zeros_like(net_preds[net_list[0]][0,:,:], dtype=np.float)
 
-        """for ix_feat in range(17):
+        for ix_feat in range(17):
 
             print("Logit feat %d/%d..."%(ix_feat+1,17))
 
@@ -345,7 +345,7 @@ def main_test():
 
             yy_pred = np.array([p2 for p1, p2 in clf.predict_proba(y_pred_feat)])
 
-            y_pred_logit[:, ix_feat] = yy_pred"""
+            y_pred_logit[:, ix_feat] = yy_pred
 
         y_pred_logit = net_preds["inceptionv3_128"][0,:,:]
 
@@ -409,7 +409,7 @@ def main_test():
     pred_labels = [" ".join(labels[np.where(yp > 0.5)]) for yp in y_pred2]
 
     df = pd.DataFrame(np.array([test_ids, pred_labels]).T, columns=["image_name", "tags"])
-    df.to_csv("../data/planet_amazon/submission_file_005.csv", index=False)
+    df.to_csv("../data/planet_amazon/submission_file_006.csv", index=False)
 
 
 
@@ -420,4 +420,4 @@ def main_test():
 #                   Main
 #==============================================
 if __name__ == '__main__':
-    main_test()
+    main_val()
