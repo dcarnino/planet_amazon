@@ -333,7 +333,6 @@ def main_test():
                 clf = pickle.load(iOF)
 
             y_pred_feat = y_pred[..., ix_feat].T
-            y_true_feat = y_true[..., ix_feat]
 
             yy_pred = np.array([p2 for p1, p2 in clf.predict_proba(y_pred_feat)])
 
