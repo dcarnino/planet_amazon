@@ -417,4 +417,4 @@ def main_test():
 #                   Main
 #==============================================
 if __name__ == '__main__':
-    main_test()
+    main_val()
