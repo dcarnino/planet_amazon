@@ -143,7 +143,8 @@ def main_val():
     ### logistic regression
     if mean_only:
 
-        y_pred = np.array([net_preds[net_name][0,:,:] for net_name in net_list])
+        y_pred = np.array([net_preds[net_name][0,:,:] for net_name in net_list]+\
+                          [net_preds[net_name][4,:,:] for net_name in net_list if net_name != "xgboost" and net_name != "extratrees"])
         y_true = net_trues[net_list[0]]
 
         y_pred_logit = np.zeros_like(net_trues[net_list[0]], dtype=np.float)
@@ -398,7 +399,7 @@ def main_test():
     pred_labels = [" ".join(labels[np.where(yp > 0.5)]) for yp in y_pred2]
 
     df = pd.DataFrame(np.array([test_ids, pred_labels]).T, columns=["image_name", "tags"])
-    df.to_csv("../data/planet_amazon/submission_file_004.csv", index=False)
+    df.to_csv("../data/planet_amazon/submission_file_005.csv", index=False)
 
 
 
@@ -409,4 +410,4 @@ def main_test():
 #                   Main
 #==============================================
 if __name__ == '__main__':
-    main_test()
+    main_val()
