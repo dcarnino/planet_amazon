@@ -84,7 +84,7 @@ def main(verbose=1):
     else:
 
         ### Import data
-        if verbose >= 1: print("Importing data (fold %d)..."%fold_id)
+        if verbose >= 1: print("Importing data (test)...")
 
         df_feat = pd.read_csv("../data/planet_amazon/test_features.csv").rename(columns={"0": "image_name"})
         image_ids = df_feat["image_name"].values
