@@ -53,7 +53,7 @@ def optimise_f2_thresholds(y, p, resolution=100, bmin=0., bmax=1., verbose=1):
 
 def main_val():
 
-    mean_only = True
+    mean_only = False
     cross_validate = True
 
     print("Importing features...")
@@ -144,8 +144,7 @@ def main_val():
     if mean_only:
 
         y_pred = np.array([net_preds[net_name][0,:,:] for net_name in net_list]+\
-                          [net_preds[net_name][4,:,:] for net_name in net_list if net_name != "xgboost" and net_name != "extratrees"]+\
-                          [net_preds[net_name][3,:,:] for net_name in net_list if net_name != "xgboost" and net_name != "extratrees"])
+                          [net_preds[net_name][4,:,:] for net_name in net_list if net_name != "xgboost" and net_name != "extratrees"])
         y_true = net_trues[net_list[0]]
 
         y_pred_logit = np.zeros_like(net_trues[net_list[0]], dtype=np.float)
@@ -224,7 +223,7 @@ def main_val():
                     yy_pred = clf.predict_proba(XX_test)
                     print(f1_score(yy_test, np.round(yy_pred), average='micro'))
 
-                    y_pred_xgb[test_index, ix_feat] = yy_pred
+                    y_pred_logit[test_index, ix_feat] = yy_pred
 
             else:
 
