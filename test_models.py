@@ -346,6 +346,8 @@ def main_test():
 
             y_pred_logit[:, ix_feat] = yy_pred
 
+        y_pred_logit = net_preds["inceptionv3_128"][0,:,:]
+
         with open("../data/planet_amazon/optimized_thresholds_logit.txt", "r") as iOF:
             f2_threshs = iOF.readlines()
         f2_threshs = [float(thresh[:-1]) for thresh in f2_threshs]
@@ -417,4 +419,4 @@ def main_test():
 #                   Main
 #==============================================
 if __name__ == '__main__':
-    main_val()
+    main_test()
