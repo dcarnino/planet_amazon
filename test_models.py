@@ -349,6 +349,7 @@ def main_test():
         with open("../data/planet_amazon/optimized_thresholds_logit.txt", "r") as iOF:
             f2_threshs = iOF.readlines()
         f2_threshs = [float(thresh[:-1]) for thresh in f2_threshs]
+        f2_threshs = [0.2]*len(f2_threshs)
 
         y_pred2 = np.zeros_like(y_pred_logit)
         for i in range(17):
