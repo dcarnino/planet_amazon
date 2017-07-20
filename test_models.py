@@ -407,7 +407,7 @@ def main_test():
     pred_labels = [" ".join(labels[np.where(yp > 0.5)]) for yp in y_pred2]
 
     df = pd.DataFrame(np.array([test_ids, pred_labels]).T, columns=["image_name", "tags"])
-    df.to_csv("../data/planet_amazon/submission_file_006.csv", index=False)
+    df.to_csv("../data/planet_amazon/submission_file_007.csv", index=False)
 
 
 
