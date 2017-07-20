@@ -315,9 +315,9 @@ def main_test():
         net_preds[net] = y_pred
         net_image_ids[net] = np.array(test_ids)
 
-        ### assert order is correct
-        for net_name in net_list[1:]:
-            np.testing.assert_array_equal(net_image_ids[net_list[0]], net_image_ids[net_name], err_msg="Conflicting values for nets %s and %s."%(net_list[0], net_name))
+    ### assert order is correct
+    for net_name in net_list[1:]:
+        np.testing.assert_array_equal(net_image_ids[net_list[0]], net_image_ids[net_name], err_msg="Conflicting values for nets %s and %s."%(net_list[0], net_name))
 
     if mean_only:
 
