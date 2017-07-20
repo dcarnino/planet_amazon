@@ -129,7 +129,7 @@ def main(verbose=1):
         if verbose >= 1: print("Loading model (fold %d)..."%fold_id)
         model_dir = "../data/planet_amazon/models/"
         model = load_model(inception_json=model_dir+"inceptionv3_128_mod_%d.json"%fold_id,
-                           inception_h5=model_dir+"inceptionv3_128_fine_tuned_check_point_2_%d.h5"%fold_id,
+                           inception_h5=model_dir+"inceptionv3_128_fine_tuned_check_point_3_%d.h5"%fold_id,
                            verbose=verbose)
 
         ### Load images
@@ -213,7 +213,7 @@ def main(verbose=1):
             if verbose >= 1: print("Loading model (fold %d)..."%fold_id)
             model_dir = "../data/planet_amazon/models/"
             model = load_model(inception_json=model_dir+"inceptionv3_128_mod_%d.json"%fold_id,
-                               inception_h5=model_dir+"inceptionv3_128_fine_tuned_check_point_2_%d.h5"%fold_id,
+                               inception_h5=model_dir+"inceptionv3_128_fine_tuned_check_point_3_%d.h5"%fold_id,
                                verbose=verbose)
 
             ### Infer
