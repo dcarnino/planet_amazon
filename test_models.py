@@ -146,7 +146,7 @@ def main_val():
         y_pred = np.array([net_preds[net_name][0,:,:] for net_name in net_list])
         y_true = net_trues[net_list[0]]
 
-        y_pred_logit = np.zeros_like(net_trues.values()[0], dtype=np.float)
+        y_pred_logit = np.zeros_like(net_trues[net_list[0]][0], dtype=np.float)
 
         for ix_feat in range(17):
 
