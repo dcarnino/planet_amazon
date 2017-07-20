@@ -172,6 +172,8 @@ def main_val():
 
                     y_pred_logit[test_index, ix_feat] = yy_pred
 
+                y_pred_logit = net_preds["vgg16_128"][0,:,:]
+
             else:
 
                 print("Logit feat %d/%d..."%(ix_feat+1,17))
