@@ -250,7 +250,7 @@ def main_val():
 
     if cross_validate:
 
-        f2_threshs = optimise_f2_thresholds(y_true, y_pred_logit, bmin=0., bmax=1., resolution=100)
+        f2_threshs = optimise_f2_thresholds(y_true, y_pred_logit, bmin=0.05, bmax=0.3, resolution=100)
         #f2_threshs = [0.5]*17
 
         with open("../data/planet_amazon/optimized_thresholds_logit.txt", "w") as iOF:
