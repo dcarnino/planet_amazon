@@ -298,19 +298,19 @@ def main_test():
 
             y_pred_fold = np.load("../data/planet_amazon/%s_predstest.npy"%net)
 
-        y_pred_fold_mean = np.mean(y_pred_fold, axis=0)
-        y_pred_fold_median = np.median(y_pred_fold, axis=0)
-        y_pred_fold_std = np.std(y_pred_fold, axis=0)
-        y_pred_fold_min = np.min(y_pred_fold, axis=0)
-        y_pred_fold_max = np.max(y_pred_fold, axis=0)
-        y_pred_fold_skew = skew(y_pred_fold, axis=0, nan_policy='omit')
-        y_pred_fold_skew[~np.isfinite(y_pred_fold_skew)] = 0.
-        y_pred_fold_kurtosis = kurtosis(y_pred_fold, axis=0, nan_policy='omit')
-        y_pred_fold_kurtosis[~np.isfinite(y_pred_fold_kurtosis)] = 0.
-        y_pred_fold_iqr = iqr(y_pred_fold, axis=0)
-        y_pred_fold_entropy = entropy(y_pred_fold)
+        y_pred_mean = np.mean(y_pred_fold, axis=0)
+        y_pred_median = np.median(y_pred_fold, axis=0)
+        y_pred_std = np.std(y_pred_fold, axis=0)
+        y_pred_min = np.min(y_pred_fold, axis=0)
+        y_pred_max = np.max(y_pred_fold, axis=0)
+        y_pred_skew = skew(y_pred_fold, axis=0, nan_policy='omit')
+        y_pred_skew[~np.isfinite(y_pred_skew)] = 0.
+        y_pred_kurtosis = kurtosis(y_pred_fold, axis=0, nan_policy='omit')
+        y_pred_kurtosis[~np.isfinite(y_pred_kurtosis)] = 0.
+        y_pred_iqr = iqr(y_pred_fold, axis=0)
+        y_pred_entropy = entropy(y_pred_fold)
 
-        y_pred = np.array([y_pred_mean, y_pred_median, y_pred_std, y_pred_min, y_pred_max, y_pred_skew, y_pred_kurtosis, y_pred_iqr, y_pred_entropy
+        y_pred = np.array([y_pred_mean, y_pred_median, y_pred_std, y_pred_min, y_pred_max, y_pred_skew, y_pred_kurtosis, y_pred_iqr, y_pred_entropy])
 
         net_preds[net] = y_pred
         net_image_ids[net] = np.array(test_ids)
