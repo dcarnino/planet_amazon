@@ -172,7 +172,7 @@ def main_val():
 
                     y_pred_logit[test_index, ix_feat] = yy_pred
 
-                y_pred_logit = net_preds["resnet50_128"][0,:,:]
+                y_pred_logit = net_preds["inceptionv3_128"][0,:,:]
 
             else:
 
