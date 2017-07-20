@@ -334,7 +334,7 @@ def main_test():
 
         y_pred_logit = np.zeros_like(net_preds[net_list[0]][0,:,:], dtype=np.float)
 
-        for ix_feat in range(17):
+        """for ix_feat in range(17):
 
             print("Logit feat %d/%d..."%(ix_feat+1,17))
 
@@ -345,7 +345,7 @@ def main_test():
 
             yy_pred = np.array([p2 for p1, p2 in clf.predict_proba(y_pred_feat)])
 
-            y_pred_logit[:, ix_feat] = yy_pred
+            y_pred_logit[:, ix_feat] = yy_pred"""
 
         y_pred_logit = net_preds["inceptionv3_128"][0,:,:]
 
