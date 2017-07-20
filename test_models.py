@@ -344,8 +344,6 @@ def main_test():
 
             y_pred_logit[:, ix_feat] = yy_pred
 
-        y_pred_logit = net_preds["inceptionv3_128"][0,:,:]
-
         with open("../data/planet_amazon/optimized_thresholds_logit.txt", "r") as iOF:
             f2_threshs = iOF.readlines()
         f2_threshs = [float(thresh[:-1]) for thresh in f2_threshs]
@@ -407,7 +405,7 @@ def main_test():
     pred_labels = [" ".join(labels[np.where(yp > 0.5)]) for yp in y_pred2]
 
     df = pd.DataFrame(np.array([test_ids, pred_labels]).T, columns=["image_name", "tags"])
-    df.to_csv("../data/planet_amazon/submission_file_007.csv", index=False)
+    df.to_csv("../data/planet_amazon/submission_file_008.csv", index=False)
 
 
 
