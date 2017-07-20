@@ -155,7 +155,7 @@ def main_val():
                 y_pred_feat = y_pred[..., ix_feat].T
                 y_true_feat = y_true[..., ix_feat]
 
-                n_folds = 5
+                n_folds = 20
                 cv = StratifiedKFold(n_splits=n_folds, shuffle=True)
 
                 for fold_cnt, (train_index, test_index) in enumerate(cv.split(y_pred_feat, y_true_feat)):
@@ -242,25 +242,25 @@ def main_val():
                     pickle.dump(clf, iOF)
 
 
-        if cross_validate:
+    if cross_validate:
 
-            f2_threshs = optimise_f2_thresholds(y_true, y_pred_logit, bmin=0., bmax=1., resolution=100)
-            #f2_threshs = [0.5]*17
+        f2_threshs = optimise_f2_thresholds(y_true, y_pred_logit, bmin=0., bmax=1., resolution=100)
+        #f2_threshs = [0.5]*17
 
-            with open("../data/planet_amazon/optimized_thresholds_logit.txt", "w") as iOF:
-                iOF.writelines([str(thresh)+"\n" for thresh in f2_threshs])
+        with open("../data/planet_amazon/optimized_thresholds_logit.txt", "w") as iOF:
+            iOF.writelines([str(thresh)+"\n" for thresh in f2_threshs])
 
-            y_pred2 = np.zeros_like(y_pred_logit)
-            for i in range(17):
-                y_pred2[:, i] = (y_pred_logit[:, i] > f2_threshs[i]).astype(np.int)
+        y_pred2 = np.zeros_like(y_pred_logit)
+        for i in range(17):
+            y_pred2[:, i] = (y_pred_logit[:, i] > f2_threshs[i]).astype(np.int)
 
-            print(y_true.shape)
-            print(y_pred2.shape)
+        print(y_true.shape)
+        print(y_pred2.shape)
 
-            print(y_true[:3,:])
-            print(y_pred2[:3,:])
+        print(y_true[:3,:])
+        print(y_pred2[:3,:])
 
-            print("Fbeta score: ", fbeta_score(y_true, y_pred2, 2, average='samples'))
+        print("Fbeta score: ", fbeta_score(y_true, y_pred2, 2, average='samples'))
 
 
 
