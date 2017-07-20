@@ -165,7 +165,7 @@ def main_val():
                     XX_train, XX_test = y_pred_feat[train_index], y_pred_feat[test_index]
                     yy_train, yy_test = y_true_feat[train_index], y_true_feat[test_index]
 
-                    clf = LogisticRegression(n_jobs=15, max_iter=1000)
+                    clf = LogisticRegression(n_jobs=15, max_iter=1000, C=0.5)
 
                     clf.fit(XX_train, yy_train)
 
