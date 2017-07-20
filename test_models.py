@@ -56,6 +56,7 @@ def main_val():
     mean_only = True
     cross_validate = True
 
+    print("Importing features...")
     df_feat = pd.read_csv("../data/planet_amazon/train_features.csv").rename(columns={"0": "image_name"})
     image_names = df_feat["image_name"].values
     image_names_sorted = np.argsort(image_names)
@@ -70,6 +71,7 @@ def main_val():
     n_folds_list[3:6] = []
     for net, offset, n_folds in zip(net_list, offset_list, n_folds_list):
 
+        print("Processing model %s..."%net)
         indices = []
         y_true = []
         y_pred_mean, y_pred_median, y_pred_std, y_pred_min, y_pred_max, y_pred_skew, y_pred_kurtosis, y_pred_iqr, y_pred_entropy = [], [], [], [], [], [], [], [], []
@@ -79,7 +81,7 @@ def main_val():
             df_val = pd.read_csv("../data/planet_amazon/val%d.csv"%(fold_id+offset))
             val_image_names = df_val["image_name"].values
 
-            if offset == 5:
+            if n_folds == 5:
                 y_pred_fold = np.load("../data/planet_amazon/%s_preds%d_20.npy"%(net,fold_id+offset))[:20,:,:]
                 y_true_fold = np.load("../data/planet_amazon/%s_trues%d_20.npy"%(net,fold_id+offset))[:20,:,:]
             else:
